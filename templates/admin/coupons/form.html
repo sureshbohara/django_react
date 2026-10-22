@@ -1,0 +1,185 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}{% if coupon %}Edit{% else %}Create{% endif %} Coupon{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'coupons:coupon_list' %}">Coupons</a></li>
+            <li class="breadcrumb-item active">{% if coupon %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"> {% if coupon %}Edit{% else %}Create{% endif %} Coupon</h6>
+        <a href="{% url 'coupons:coupon_list' %}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+    <div class="card-body bg-light p-3">
+        <form id="couponForm" method="POST" action="{% if coupon %}{% url 'coupons:coupon_update' coupon.id %}{% else %}{% url 'coupons:coupon_create' %}{% endif %}">
+            {% csrf_token %}
+            
+            <div class="row g-3">
+              
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Coupon Details</h5>
+                            
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Coupon Code <span class="text-danger">*</span></label>
+                                    {{ form.code }}
+                                    <small class="text-muted d-block mt-1">Will be auto-converted to uppercase</small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount Type <span class="text-danger">*</span></label>
+                                    {{ form.discount_type }}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Discount Value <span class="text-danger">*</span></label>
+                                    {{ form.discount_value }}
+                                    <small class="text-muted d-block mt-1">Amount (Rs.) or Percentage (%)</small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Max Discount</label>
+                                    {{ form.max_discount }}
+                                    <small class="text-muted d-block mt-1">For percentage type only</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    {{ form.description }}
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label">Minimum Order Amount</label>
+                                    {{ form.min_order_amount }}
+                                    <small class="text-muted d-block mt-1">Optional</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+         
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Validity</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Start Date</label>
+                                    {{ form.start_date }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">End Date</label>
+                                    {{ form.end_date }}
+                                </div>
+                                
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3">Usage Limits</h6>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label">Total Usage Limit</label>
+                                    {{ form.usage_limit }}
+                                    <small class="text-muted d-block mt-1">Leave empty for unlimited</small>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Usage Per User</label>
+                                    {{ form.usage_limit_per_user }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Already Used</label>
+                                    {{ form.used_count }}
+                                    <small class="text-muted d-block mt-1">Read-only</small>
+                                </div>
+                                
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <div class="form-check form-switch">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active Coupon</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i> 
+                                        {% if coupon %}Update{% else %}Create{% endif %} Coupon
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Auto Uppercase for Coupon Code
+    $('input[name="code"]').on('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // 2. AJAX Submit
+    $('#couponForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove();
+        $('.is-invalid').removeClass('is-invalid');
+
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        const originalBtnText = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'),
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    setTimeout(() => { 
+                        window.location.href = '{% url "coupons:coupon_list" %}'; 
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, errors) {
+                        let input = $(`[name="${field}"]`);
+                        if (input.length) {
+                            input.addClass('is-invalid').after(`<div class="invalid-feedback d-block">${errors[0]}</div>`);
+                        }
+                    });
+                    toastr.error('Please fix the form errors');
+                } else {
+                    toastr.error('Something went wrong');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

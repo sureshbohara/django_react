@@ -1,0 +1,149 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}Variants: {{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}">Products</a></li>
+            <li class="breadcrumb-item active">Variants</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i> Variants for: {{ product.name }}</h6>
+        <a href="{% url 'products:product_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    <div class="card-body bg-light p-3">
+        
+        <!-- Add Variant Form -->
+        <div class="card mb-3">
+            <div class="card-header"><h6 class="mb-0">Add New Variant</h6></div>
+            <div class="card-body">
+                <form id="variantForm">
+                    {% csrf_token %}
+                    <div class="row g-3">
+
+                        {% for attr in attributes %}
+                            <div class="col-md-3">
+                                <label class="form-label">{{ attr.name }}</label>
+                                <select name="attributes_{{ attr.name }}" class="form-select attr-select">
+                                    <option value="">Select</option>
+                                    {% for val in attr.values %}
+                                        <option value="{{ val }}">{{ val }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endfor %}
+
+                        <div class="col-md-3"><label class="form-label">SKU</label><input type="text" name="sku" class="form-control" placeholder="SKU"></div>
+
+                        <div class="col-md-2"><label class="form-label">Price</label><input type="number" name="price" class="form-control" step="0.01" placeholder="Price"></div>
+
+                        <div class="col-md-2"><label class="form-label">Stock</label><input type="number" name="stock_quantity" class="form-control" value="0" placeholder="Stock"></div>
+
+                        <div class="col-md-2" style="margin-top: 44px;">
+                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i> Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Variants Table -->
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Attributes</th>
+                        <th>SKU</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for variant in variants %}
+                        <tr id="variant-row-{{ variant.id }}">
+
+ 
+                            <td>
+                                {% for key, val in variant.attributes.items %}
+                                    <span class="badge bg-light text-dark border">{{ key }}: {{ val }}</span>
+                                {% endfor %}
+                            </td>
+
+                            <td>{{ variant.sku|default:"-" }}</td>
+
+                            <td>Rs.{{ variant.price|default:"0.00" }}</td>
+
+                            <td>{{ variant.stock_quantity }}</td>
+
+                            <td><span class="badge {% if variant.status %}bg-success{% else %}bg-danger{% endif %}">{{ variant.status|yesno:"Active,Inactive" }}</span></td>
+
+                            <td>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteVariant({{ variant.id }})"><i class="bi bi-trash"></i></button>
+                            </td>
+
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No variants yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $('#variantForm').on('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        let attributes = {};
+        $('.attr-select').each(function() {
+            let name = $(this).attr('name').replace('attributes_', '');
+            let val = $(this).val();
+            if(val) attributes[name] = val;
+        });
+        formData.append('attributes', JSON.stringify(attributes));
+
+        const submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Processing...');
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'products:variant_create' product.id %}",
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: { 'X-CSRFToken': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res) {
+                if(res.success) { toastr.success(res.message); setTimeout(() => location.reload(), 1000); }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html('<i class="bi bi-plus-circle"></i> Add');
+                toastr.error('Error creating variant');
+            }
+        });
+    });
+
+    function deleteVariant(id) {
+        if(!confirm('Delete this variant?')) return;
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'products:variant_delete' 0 %}".replace('0', id),
+            headers: { 'X-CSRFToken': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res) {
+                if(res.success) { toastr.success(res.message); $('#variant-row-' + id).fadeOut(500, function() { $(this).remove(); }); }
+            }
+        });
+    }
+</script>
+{% endblock %}

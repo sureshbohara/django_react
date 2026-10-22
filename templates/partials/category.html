@@ -1,0 +1,28 @@
+{% if categories %}
+<section class="category_section section">
+  <div class="container">
+    <div class="category_bg">
+      <div class="row g-4">
+        {% for category in categories|slice:":2" %}
+        <div class="col-lg-6">
+          <div class="category-block">
+            <h2 class="category-title">{{ category.name }}</h2>
+            <div class="category-image-wrapper">
+              <img src="{{ category.image.url|default:'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=800&q=80' }}" alt="{{ category.name }}" class="category-img">
+            </div>
+            {% if category.children.all %}
+            <div class="category-tags">
+              {% for child in category.children.all|slice:":3" %}
+              <a href="{% url 'frontend:shop' %}?category={{ child.slug }}" class="tag-btn">{{ child.name }}</a>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <a href="{% url 'frontend:shop' %}?category={{ category.slug }}" class="view-all-btn">View All {{ category.name }} <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}

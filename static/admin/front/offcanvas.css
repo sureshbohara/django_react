@@ -1,0 +1,141 @@
+ 
+/* Offcanvas */
+ .offcanvas {
+     background: var(--bg-white);
+     width: 100% !important;
+     max-width: 400px;
+}
+ .offcanvas-header {
+     background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+     color: var(--bg-white);
+     padding: 24px 28px;
+     border-bottom: none;
+}
+ .offcanvas-title {
+     font-family: var(--serif);
+     font-size: 20px;
+     font-weight: 600;
+}
+ .offcanvas-header .btn-close {
+     filter: brightness(0) invert(1);
+     opacity: 0.9;
+}
+ .offcanvas-body {
+     padding: 0;
+}
+ .offcanvas-nav {
+     padding: 10px 0;
+     overflow-y: auto;
+}
+ .offcanvas-nav .accordion-item {
+     border: none;
+     background: transparent;
+}
+ .offcanvas-nav .accordion-button {
+     background: none;
+     border: none;
+     border-bottom: 1px solid var(--border);
+     padding: 16px 28px;
+     font-size: 14px;
+     font-weight: 700;
+     color: var(--dark);
+     text-transform: uppercase;
+     letter-spacing: 0.04em;
+     box-shadow: none !important;
+}
+ .offcanvas-nav .accordion-button:not(.collapsed) {
+     background: var(--bg-light);
+     color: var(--primary);
+     box-shadow: none;
+}
+ .offcanvas-nav .accordion-body {
+     padding: 0;
+     background: var(--bg-light);
+}
+ .offcanvas-nav .accordion-body ul {
+     list-style: none;
+     padding: 0;
+     margin: 0;
+}
+ .offcanvas-nav .accordion-body li {
+     border-bottom: 1px solid var(--border);
+}
+ .offcanvas-nav .accordion-body li h4 {
+     font-size: 11.5px;
+     font-weight: 700;
+     color: var(--primary);
+     text-transform: uppercase;
+     padding: 12px 28px 6px;
+     margin: 0;
+     letter-spacing: 0.04em;
+}
+ .offcanvas-nav .accordion-body li a {
+     padding: 9px 28px;
+     display: block;
+     font-size: 13.5px;
+     color: var(--dark);
+}
+ .offcanvas-nav .accordion-body li a:hover {
+     color: var(--accent);
+     padding-left: 33px;
+}
+/* Mobile app bottom bar */
+ .mobile-app-footer {
+     position: fixed;
+     bottom: 0;
+     left: 0;
+     width: 100%;
+     height: 64px;
+     background: var(--bg-white);
+     border-top: 1px solid var(--border);
+     display: flex;
+     justify-content: space-around;
+     align-items: center;
+     z-index: 1050;
+     padding-bottom: env(safe-area-inset-bottom);
+}
+ .app-footer-link {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     text-decoration: none;
+     color: var(--dark);
+     font-size: 10.5px;
+     font-weight: 700;
+     text-transform: uppercase;
+     background: none;
+     border: none;
+     width: 25%;
+     height: 100%;
+     cursor: pointer;
+     transition: var(--transition);
+}
+ .app-footer-link i {
+     font-size: 20px;
+     margin-bottom: 3px;
+}
+ .app-footer-link.active, .app-footer-link:hover {
+     color: var(--accent);
+}
+ .whatsapp-float {
+     position: fixed;
+     bottom: 24px;
+     right: 24px;
+     width: 56px;
+     height: 56px;
+     background: #25D366;
+     color: #fff;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     font-size: 26px;
+     z-index: 1040;
+     box-shadow: var(--shadow-hover);
+     transition: var(--transition);
+}
+ .whatsapp-float:hover {
+     transform: scale(1.1);
+     background: #20bd5a;
+}

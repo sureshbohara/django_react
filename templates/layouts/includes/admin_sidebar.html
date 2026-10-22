@@ -1,0 +1,130 @@
+{% load static %}
+<aside class="sidebar-wrapper" data-simplebar="true">
+    <div class="sidebar-header d-flex align-items-center">
+        <div>
+            <img src="{% static 'default/noimage.png' %}" class="logo-icon" alt="Logo" onerror="this.src='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/shop.svg'">
+        </div>
+        <div class="ms-2">
+            <h4 class="logo-text mb-0">SHOP DASH</h4>
+        </div>
+        <div class="toggle-icon ms-auto">
+            <i class="bi bi-chevron-double-left"></i>
+        </div>
+    </div>
+
+    <ul class="metismenu" id="menu">
+        
+
+        <li>
+            <a href="{% url 'core:dashboard' %}">
+                <div class="parent-icon"><i class="bi bi-speedometer2"></i></div>
+                <div class="menu-title">Dashboard</div>
+            </a>
+        </li>
+
+     
+        <li class="menu-label">E-Commerce</li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-bag"></i></div>
+                <div class="menu-title">Products</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'products:product_list' %}"><i class="bi bi-box-seam"></i> All Products</a></li>
+                <li><a href="{% url 'products:attribute_list' %}"><i class="bi bi-sliders"></i> Attributes</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-collection"></i></div>
+                <div class="menu-title">Catalog</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'categories:category_list' %}"><i class="bi bi-tags"></i> Categories</a></li>
+                <li><a href="{% url 'brands:brand_list' %}"><i class="bi bi-award"></i> Brands</a></li>
+
+                <li><a href="{% url 'coupons:coupon_list' %}"><i class="bi bi-ticket-perforated"></i> Coupons & Offers</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="{% url 'orders:order_list' %}"> 
+                <div class="parent-icon"><i class="bi bi-cart-check"></i></div>
+                <div class="menu-title">Orders</div>
+            </a>
+        </li>
+
+
+
+ 
+        <li class="menu-label">Customer Management</li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="menu-title">Customers</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'customers:customer_list' %}"><i class="bi bi-people"></i> All Customers</a></li>
+                <li><a href="{% url 'customers:send_email' %}"><i class="bi bi-envelope-paper"></i> Send Email / Offer</a></li>
+            </ul>
+        </li>
+
+    
+        <li class="menu-label">Content Management</li>
+        <li>
+            <a href="{% url 'pages:page_list' %}">
+                <div class="parent-icon"><i class="bi bi-file-earmark-text"></i></div>
+                <div class="menu-title">CMS Pages</div>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'blogs:post_list' %}">
+                <div class="parent-icon"><i class="bi bi-newspaper"></i></div>
+                <div class="menu-title">Blog Posts</div>
+            </a>
+        </li>
+
+
+        <li class="menu-label">Site Elements</li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+                <div class="menu-title">Site Elements</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'banners:banner_list' %}"><i class="bi bi-image"></i> Banners</a></li>
+                <li><a href="{% url 'faqs:faq_list' %}"><i class="bi bi-question-circle"></i> FAQs</a></li>
+                <li><a href="{% url 'reviews:review_list' %}"><i class="bi bi-chat-quote"></i> Reviews</a></li>
+                <li><a href="{% url 'galleries:gallery_list' %}"><i class="bi bi-images"></i> Gallery</a></li>
+                <li><a href="{% url 'teams:team_list' %}"><i class="bi bi-people"></i> Team Members</a></li>
+                <li><a href="{% url 'services:service_list' %}"><i class="bi bi-briefcase"></i> Services</a></li>
+            </ul>
+        </li>
+
+  
+        
+        <li class="menu-label">System</li>
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-gear-wide-connected"></i></div>
+                <div class="menu-title">Settings</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'site_settings:settings' %}"><i class="bi bi-sliders"></i> General Settings</a></li>
+                <li><a href="{% url 'login_activities:list' %}"><i class="bi bi-clock-history"></i> Login Activities</a></li>
+            </ul>
+        </li>
+
+  
+       
+        <li>
+            <a href="javascript:;" class="has-arrow">
+                <div class="parent-icon"><i class="bi bi-shield-lock"></i></div>
+                <div class="menu-title">User Management</div>
+            </a>
+            <ul>
+                <li><a href="{% url 'accounts:admin_user_list' %}"><i class="bi bi-person-badge"></i> Admin Users</a></li>
+            </ul>
+        </li>
+
+    </ul>
+</aside>

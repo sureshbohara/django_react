@@ -1,0 +1,47 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th width="100">Logo</th>
+                    <th>Name</th>
+                    <th>Website</th>
+                    <th width="80">Order</th>
+                    <th width="100">Status</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for brand in page_obj %}
+                <tr>
+                    <td><img src="{{ brand.logo_url }}" width="60" height="40" style="object-fit: contain; border-radius: 4px;"></td>
+                    <td><strong>{{ brand.name }}</strong><br><small class="text-muted">/{{ brand.slug }}</small></td>
+                    <td>{% if brand.website %}<a href="{{ brand.website }}" target="_blank" class="text-decoration-none"><i class="bi bi-link-45deg"></i> Visit Website</a>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                    <td>
+                        <input type="number" name="order_level" value="{{ brand.order_level }}" data-id="{{ brand.id }}" data-original="{{ brand.order_level }}" class="form-control form-control-sm order-level-input" style="width: 60px;">
+                    </td>
+                    <td>
+                        <form class="status-form" data-id="{{ brand.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ brand.id }}">
+                            <input type="checkbox" {% if brand.status %}checked{% endif %} data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'brands:brand_update' brand.id %}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form action="{% url 'brands:brand_delete' brand.id %}" method="POST" id="deleteForm{{ brand.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(event, 'deleteForm{{ brand.id }}')"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">No brands found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+     {% include 'layouts/includes/pagination.html' %}
+</div>

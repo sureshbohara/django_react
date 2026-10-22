@@ -1,0 +1,67 @@
+/* ============================================================ RESPONSIVE ============================================================ */
+ @media (min-width: 769px) {
+     .mobile-app-footer {
+         display: none;
+    }
+}
+ @media (max-width: 1200px) {
+     .mega-menu-inner {
+         grid-template-columns: repeat(3, 1fr);
+    }
+}
+ @media (max-width: 991px) {
+     .primary-nav {
+         display: none;
+    }
+     .expedition-grid, .testimonial-grid {
+         grid-template-columns: 1fr 1fr;
+    }
+     .blog-layout-container {
+         grid-template-columns: 1fr;
+    }
+     .why-choose-row {
+         flex-direction: column;
+    }
+     .why-choose-left, .why-choose-right {
+         width: 100%;
+    }
+     .why-choose-left {
+         min-height: 220px;
+    }
+     .why-choose-right {
+         padding: 44px 28px;
+    }
+}
+ @media (max-width: 768px) {
+     .section {
+         padding: 30px 0;
+    }
+     .hero-section {
+         height: 520px;
+    }
+     .hero-title {
+         font-size: 32px;
+    }
+     .expedition-grid, .testimonial-grid, .feature-grid-new {
+         grid-template-columns: 1fr;
+    }
+     .about-visual {
+         margin-top: 36px;
+    }
+     .departure-header {
+         display: none;
+    }
+     .departure-row {
+         grid-template-columns: 1fr 1fr;
+         gap: 6px;
+    }
+     .whatsapp-float {
+         bottom: 80px;
+    }
+     body {
+         padding-bottom: 64px;
+    }
+     .expedition-meta {
+         grid-template-columns: 1fr;
+    }
+}

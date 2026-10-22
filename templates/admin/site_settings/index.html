@@ -1,0 +1,421 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}" class="text-decoration-none text-secondary">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Settings</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>System Settings</h5>
+    </div>
+    
+    <form id="updateSetting" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body p-0 bg-light">
+            <div class="row g-0">
+                <!-- Left Sidebar Tabs -->
+                <div class="col-md-3 bg-white border-end">
+                    <div class="p-4">
+                        <div class="settings-nav-wrapper" id="v-pills-tab" role="tablist">
+                            <button class="btn btn-outline-success w-100 text-start mb-2 active" data-bs-toggle="pill" data-bs-target="#general" type="button"><i class="bi bi-sliders me-2"></i> General</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#media" type="button"><i class="bi bi-images me-2"></i> Media</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#smtp" type="button"><i class="bi bi-envelope-paper me-2"></i> SMTP / Mail</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#social" type="button"><i class="bi bi-share me-2"></i> Social Links</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#api" type="button"><i class="bi bi-code-square me-2"></i> API & Integrations</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#seo" type="button"><i class="bi bi-google me-2"></i> SEO</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#information" type="button"><i class="bi bi-file-text me-2"></i> Information</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#additional" type="button"><i class="bi bi-collection-play me-2"></i> Process Info</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#work" type="button"><i class="bi bi-briefcase me-2"></i> Work Info</button>
+                            <button class="btn btn-outline-success w-100 text-start mb-2" data-bs-toggle="pill" data-bs-target="#counter" type="button"><i class="bi bi-building me-2"></i> Counter Info</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Content Area -->
+                <div class="col-md-9 p-4 bg-white overflow-auto" style="min-height: 600px;">
+                    <div class="tab-content h-100">
+                        
+                        <!-- 1. General Tab -->
+                        <div class="tab-pane fade show active" id="general">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">General Information</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">System Name</label>{{ form.system_name }}</div>
+                                <div class="col-md-6"><label class="form-label">Primary Email</label>{{ form.email }}</div>
+                                <div class="col-md-6"><label class="form-label">Secondary Email</label>{{ form.extra_email }}</div>
+                                <div class="col-md-6"><label class="form-label">Primary Phone</label>{{ form.phone }}</div>
+                                <div class="col-md-6"><label class="form-label">Secondary Phone</label>{{ form.extra_phone }}</div>
+                                <div class="col-md-6"><label class="form-label">Address</label>{{ form.address }}</div>
+                                <div class="col-md-6"><label class="form-label">Opening Hours</label>{{ form.opening_hr }}</div>
+                                <div class="col-md-6"><label class="form-label">Work Hours</label>{{ form.work_hours }}</div>
+                                <div class="col-12"><label class="form-label">Google Map Embed</label>{{ form.google_map }}</div>
+                                <div class="col-12"><label class="form-label">Footer Copyright</label>{{ form.footer_copyright }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Media Tab -->
+
+                        <div class="tab-pane fade" id="media">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Media Management</h6>
+                            <div class="row g-4">
+                                
+                                <!-- Logo -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Logo</label>
+                                    {{ form.logo }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.logo_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                                <!-- Favicon -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Favicon</label>
+                                    {{ form.favicon }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.favicon_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                           
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Footer Gateway Image</label>
+                                    {{ form.footer_gateway_img }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.footer_gateway_img_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                         
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Background Image</label>
+                                    {{ form.bg_image }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.bg_image_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                               
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Breadcrumb</label>
+                                    {{ form.breadcrumb }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.breadcrumb_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                          
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Image 1 (Info Section)</label>
+                                    {{ form.image1 }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.image1_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                           
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Image 2 (Info Section)</label>
+                                    {{ form.image2 }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.image2_url }}" class="img-fluid" style="max-height: 80px;">
+                                    </div>
+                                </div>
+
+                           
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Loader (GIF/Image)</label>
+                                    {{ form.loader }}
+                                    <div class="border rounded p-2 text-center bg-light mt-2" style="min-height: 100px;">
+                                        <img src="{{ setting.loader_url }}" class="img-fluid" style="max-height: 80px;" onerror="this.src='/static/default/noimage.png'">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- 3. SMTP Tab -->
+                        <div class="tab-pane fade" id="smtp">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Mail Configuration</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Transport</label>{{ form.mail_transport }}</div>
+                                <div class="col-md-6"><label class="form-label">Host</label>{{ form.mail_host }}</div>
+                                <div class="col-md-6"><label class="form-label">Port</label>{{ form.mail_port }}</div>
+                                <div class="col-md-6"><label class="form-label">Username</label>{{ form.mail_username }}</div>
+                                <div class="col-md-6"><label class="form-label">Password</label>{{ form.mail_password }}</div>
+                                <div class="col-md-6"><label class="form-label">Encryption</label>{{ form.mail_encryption }}</div>
+                                <div class="col-md-6"><label class="form-label">From Email</label>{{ form.mail_from }}</div>
+                                <div class="col-md-6"><label class="form-label">From Name</label>{{ form.mail_from_name }}</div>
+                                <div class="col-12 mt-3">
+                                    <div class="form-check form-switch">
+                                        {{ form.smtp_check }}
+                                        <label class="form-check-label ms-2" for="{{ form.smtp_check.id_for_label }}">Enable SMTP</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Social Tab -->
+                        <div class="tab-pane fade" id="social">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Social Links</h6>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">Facebook</label>{{ form.facebook }}</div>
+                                <div class="col-12"><label class="form-label">Twitter</label>{{ form.twitter }}</div>
+                                <div class="col-12"><label class="form-label">LinkedIn</label>{{ form.linkedin }}</div>
+                                <div class="col-12"><label class="form-label">Instagram</label>{{ form.instagram }}</div>
+                                <div class="col-12"><label class="form-label">YouTube</label>{{ form.youtube }}</div>
+                                <div class="col-12"><label class="form-label">Google</label>{{ form.google }}</div>
+                                <div class="col-12"><label class="form-label">Yelp</label>{{ form.yelp }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 5. API Tab -->
+                        <div class="tab-pane fade" id="api">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">API & Integrations</h6>
+                            <div class="row g-3">
+                                <h6 class="col-12">Google</h6>
+                                <div class="col-md-6"><label class="form-label">Analytics ID</label>{{ form.google_analytic_id }}</div>
+                                <div class="col-md-6"><label class="form-label">Client ID</label>{{ form.google_client_id }}</div>
+                                <div class="col-md-6"><label class="form-label">Client Secret</label>{{ form.google_client_secret }}</div>
+                                <div class="col-md-6"><label class="form-label">Redirect URI</label>{{ form.google_redirect }}</div>
+                                <div class="col-12"><div class="form-check form-switch">{{ form.is_google }} <label class="form-check-label ms-2">Enable Google Login</label></div></div>
+
+                                <h6 class="col-12 mt-3">Facebook</h6>
+                                <div class="col-md-6"><label class="form-label">Pixel ID</label>{{ form.facebook_analytic_id }}</div>
+                                <div class="col-md-6"><label class="form-label">Client ID</label>{{ form.facebook_client_id }}</div>
+                                <div class="col-md-6"><label class="form-label">Client Secret</label>{{ form.facebook_client_secret }}</div>
+                                <div class="col-md-6"><label class="form-label">Redirect URI</label>{{ form.facebook_redirect }}</div>
+                                <div class="col-12"><div class="form-check form-switch">{{ form.is_facebook }} <label class="form-check-label ms-2">Enable Facebook Login</label></div></div>
+
+                                <h6 class="col-12 mt-3">Recaptcha</h6>
+                                <div class="col-md-6"><label class="form-label">Site Key</label>{{ form.recaptcha_site_key }}</div>
+                                <div class="col-md-6"><label class="form-label">Secret Key</label>{{ form.recaptcha_secret_key }}</div>
+                                <div class="col-12"><div class="form-check form-switch">{{ form.is_recaptcha }} <label class="form-check-label ms-2">Enable Recaptcha</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- 6. SEO Tab -->
+                        <div class="tab-pane fade" id="seo">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">SEO</h6>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">Meta Author</label>{{ form.meta_author }}</div>
+                                <div class="col-12"><label class="form-label">Meta Title</label>{{ form.meta_title }}</div>
+                                <div class="col-12"><label class="form-label">Meta Keywords</label>{{ form.meta_keywords }}</div>
+                                <div class="col-12"><label class="form-label">Meta Description</label>{{ form.meta_description }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Information Tab -->
+                        <div class="tab-pane fade" id="information">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Information Content</h6>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">About Us Title</label>{{ form.info1 }}</div>
+                                <div class="col-12"><label class="form-label">About Us Info</label>{{ form.info2 }}</div>
+                                <div class="col-12"><label class="form-label">About Us More Info</label>{{ form.info3 }}</div>
+                                <div class="col-md-12"><label class="form-label">Footer Info</label>{{ form.info4 }}</div>
+                                <div class="col-md-4"><label class="form-label">Mission</label>{{ form.info5 }}</div>
+                                <div class="col-md-4"><label class="form-label">Vision</label>{{ form.info6 }}</div>
+                                <div class="col-md-4"><label class="form-label">Goals</label>{{ form.info7 }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 8. Process Tab (Dynamic JSON) -->
+                        <div class="tab-pane fade" id="additional">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Process Information</h6>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">Section Title</label>{{ form.process_title }}</div>
+                                <div class="col-12"><label class="form-label">Sub Title</label>{{ form.process_sub_title }}</div>
+                                <div class="col-12">
+                                    <h6 class="fw-bold">Feature Items</h6>
+                                    <div class="item-container border rounded p-3 bg-light">
+                                        <div class="itemDisplay" id="process_item-display">
+                                            {% if setting.process_item %}
+                                                {% for item in setting.process_item %}
+                                                <div class="row item-row align-items-start mb-3 border-bottom pb-3">
+                                                    <div class="col-md-6 mb-2"><label class="small text-muted">Icon</label><input type="text" name="process_item[{{ forloop.counter0 }}][icon]" class="form-control form-control-sm" value="{{ item.icon }}"></div>
+                                                    <div class="col-md-6 mb-2"><label class="small text-muted">Title</label><input type="text" name="process_item[{{ forloop.counter0 }}][title]" class="form-control form-control-sm" value="{{ item.title }}"></div>
+                                                    <div class="col-md-10 mb-2"><label class="small text-muted">Content</label><textarea name="process_item[{{ forloop.counter0 }}][content]" class="form-control form-control-sm" rows="2">{{ item.content }}</textarea></div>
+                                                    <div class="col-md-2 pt-4 text-center"><button type="button" class="btn btn-outline-danger btn-sm remove-item-btn w-100"><i class="bi bi-trash"></i></button></div>
+                                                </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary mt-3 add-item-btn" data-type="process_item"><i class="bi bi-plus-circle"></i> Add Feature</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 9. Work Tab (Dynamic JSON) -->
+                        <div class="tab-pane fade" id="work">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Work Information</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Title</label>{{ form.work_title }}</div>
+                                <div class="col-md-6"><label class="form-label">Sub Title</label>{{ form.work_sub_title }}</div>
+                                <div class="col-12">
+                                    <div class="item-container border rounded p-3 bg-light">
+                                        <div class="itemDisplay" id="work_item-display">
+                                            {% if setting.work_item %}
+                                                {% for item in setting.work_item %}
+                                                <div class="row item-row align-items-start mb-3 border-bottom pb-3">
+                                                    <div class="col-md-6 mb-2"><input type="text" name="work_item[{{ forloop.counter0 }}][icon]" class="form-control form-control-sm" value="{{ item.icon }}" placeholder="Icon"></div>
+                                                    <div class="col-md-6 mb-2"><input type="text" name="work_item[{{ forloop.counter0 }}][title]" class="form-control form-control-sm" value="{{ item.title }}" placeholder="Title"></div>
+                                                    <div class="col-md-10 mb-2"><textarea name="work_item[{{ forloop.counter0 }}][content]" class="form-control form-control-sm" rows="2">{{ item.content }}</textarea></div>
+                                                    <div class="col-md-2 pt-4 text-center"><button type="button" class="btn btn-outline-danger btn-sm remove-item-btn w-100"><i class="bi bi-trash"></i></button></div>
+                                                </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary mt-3 add-item-btn" data-type="work_item"><i class="bi bi-plus-circle"></i> Add Step</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 10. Counter Tab (Dynamic JSON) -->
+                        <div class="tab-pane fade" id="counter">
+                            <h6 class="text-primary text-uppercase fw-bold mb-3">Counter Information</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6"><label class="form-label">Title</label>{{ form.counter_title }}</div>
+                                <div class="col-md-6"><label class="form-label">Sub Title</label>{{ form.counter_sub_title }}</div>
+                                <div class="col-12">
+                                    <div class="item-container border rounded p-3 bg-light">
+                                        <div class="itemDisplay" id="counter_item-display">
+                                            {% if setting.counter_item %}
+                                                {% for item in setting.counter_item %}
+                                                <div class="row item-row align-items-start mb-3 border-bottom pb-3">
+                                                    <div class="col-md-6 mb-2"><input type="text" name="counter_item[{{ forloop.counter0 }}][icon]" class="form-control form-control-sm" value="{{ item.icon }}" placeholder="Icon"></div>
+                                                    <div class="col-md-6 mb-2"><input type="text" name="counter_item[{{ forloop.counter0 }}][title]" class="form-control form-control-sm" value="{{ item.title }}" placeholder="Number (e.g., 500+)"></div>
+                                                    <div class="col-md-10 mb-2"><textarea name="counter_item[{{ forloop.counter0 }}][content]" class="form-control form-control-sm" rows="2">{{ item.content }}</textarea></div>
+                                                    <div class="col-md-2 pt-4 text-center"><button type="button" class="btn btn-outline-danger btn-sm remove-item-btn w-100"><i class="bi bi-trash"></i></button></div>
+                                                </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary mt-3 add-item-btn" data-type="counter_item"><i class="bi bi-plus-circle"></i> Add Counter</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-white border-top">
+            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i>Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Image Preview
+    $('input[type="file"]').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            let preview = $(this).next('.border').find('img');
+            reader.onload = function(e) { preview.attr('src', e.target.result); }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // 2. Dynamic Add Item
+    $(document).on('click', '.add-item-btn', function() {
+        let type = $(this).data('type');
+        let index = Date.now();
+        let targetId = '#' + type + '-display';
+        
+        let iconPlaceholder = "e.g., bi bi-check-circle";
+        let titlePlaceholder = "Item Title";
+        let contentPlaceholder = "Description...";
+        
+        if (type === 'work_item') {
+            iconPlaceholder = "e.g., bi bi-1-circle-fill";
+            titlePlaceholder = "Step Title";
+        } else if (type === 'counter_item') {
+            iconPlaceholder = "e.g., bi bi-people-fill";
+            titlePlaceholder = "Number (e.g., 500+)";
+        }
+
+        let html = `
+            <div class="row item-row align-items-start mb-3 border-bottom pb-3">
+                <div class="col-md-12 mb-2">
+                    <label class="small text-muted">Icon Class</label>
+                    <input type="text" name="${type}[${index}][icon]" class="form-control form-control-sm" placeholder="${iconPlaceholder}">
+                </div>
+                <div class="col-md-12 mb-2">
+                    <label class="small text-muted">Title</label>
+                    <input type="text" name="${type}[${index}][title]" class="form-control form-control-sm" placeholder="${titlePlaceholder}">
+                </div>
+                <div class="col-md-12 mb-2">
+                    <label class="small text-muted">Content</label>
+                    <textarea name="${type}[${index}][content]" class="form-control form-control-sm" rows="2" placeholder="${contentPlaceholder}"></textarea>
+                </div>
+                <div class="col-md-1 pt-4 text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-item-btn w-100"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `;
+        
+        $(targetId).append(html);
+    });
+
+    // 3. Remove Item
+    $(document).on('click', '.remove-item-btn', function() {
+        $(this).closest('.item-row').remove();
+    });
+
+    // 4. AJAX Submit
+    $('#updateSetting').on('submit', function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let submitBtn = form.find('button[type="submit"]');
+        let originalText = submitBtn.html();
+        
+        form.find('.text-danger').remove();
+        form.find('.is-invalid').removeClass('is-invalid');
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Saving...');
+
+        $.ajax({
+            url: "{% url 'site_settings:settings_update' %}",
+            type: 'POST',
+            data: new FormData(this),
+            contentType: false,
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if(res.success) {
+                    toastr.success(res.message);
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalText);
+                if(xhr.status === 422 && xhr.responseJSON.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        let input = $(`[name="${field}"]`);
+                        if(input.length) {
+                            input.addClass('is-invalid').after(`<span class="text-danger small d-block">${err[0]}</span>`);
+                            $('html, body').animate({ scrollTop: input.offset().top - 100 }, 500);
+                        }
+                    });
+                    toastr.error('Please fix the errors.');
+                } else {
+                    toastr.error('Something went wrong.');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

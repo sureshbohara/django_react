@@ -1,0 +1,373 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}{% if item %}Edit{% else %}Create{% endif %} Product{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}">Products</a></li>
+            <li class="breadcrumb-item active">{% if item %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"> {% if item %}Update{% else %}Create{% endif %} Product</h6>
+        <a href="{% url 'products:product_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    
+    <div class="card-body bg-light p-3">
+        <form id="productForm" method="POST" enctype="multipart/form-data" action="{% if item %}{% url 'products:product_update' item.id %}{% else %}{% url 'products:product_create' %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                
+                <!-- LEFT COLUMN -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Basic Information</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Product Type <span class="text-danger">*</span></label>
+                                    {{ form.product_type }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    {{ form.description }}
+                                </div>
+
+
+
+
+                                  <!-- Grouped Section -->
+                                <div id="groupedSection" class="mt-4 pt-3 border-top" style="display: none;">
+                                    <h5 class="card-title mb-3 border-bottom pb-2">Grouped Products</h5>
+                                    <div class="bundleDisplay">
+                                        {% if item %}
+                                            {% for bundle in item.bundle_items.all %}
+                                                <div class="row mb-2 bundleItem">
+                                                    <div class="col-6">
+                                                        <select name="bundle_products[{{ forloop.counter0 }}][product_id]" class="form-select">
+                                                            <option value="">Select Product</option>
+                                                            {% for p in all_products %}
+                                                                <option value="{{ p.id }}" {% if bundle.child_product_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-4"><input type="number" name="bundle_products[{{ forloop.counter0 }}][quantity]" class="form-control" value="{{ bundle.quantity }}" min="1"></div>
+                                                    <div class="col-2"><button type="button" class="btn btn-danger btn-sm removeBundle"><i class="bi bi-trash"></i></button></div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="btn btn-secondary btn-sm addBundle"><i class="bi bi-plus-circle"></i> Add Product</button>
+                                </div>
+
+                                <!-- Digital Section -->
+                                <div id="digitalSection" class="mt-4 p-3 border rounded bg-light" style="display: none;">
+
+                                    <h6 class="mb-3 text-primary fw-bold">
+                                        <i class="bi bi-cloud-download me-2"></i>Digital Product Settings
+                                    </h6>
+                                    
+                                    <div class="row g-3">
+
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold">Downloadable File</label>
+                                            {{ form.downloadable_file }}
+                                            <small class="text-muted d-block mt-1">Upload PDF, ZIP, or other digital files (Max 50MB).</small>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Download Limit</label>
+                                            {{ form.download_limit }}
+                                            <small class="text-muted d-block mt-1">Leave blank or 0 for unlimited downloads.</small>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Expiry (Days)</label>
+                                            {{ form.download_expiry_days }}
+                                            <small class="text-muted d-block mt-1">Leave blank or 0 for never expires.</small>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+
+
+                                <h5 class="card-title mb-3 mt-4 pt-3 border-top border-bottom pb-2">Pricing & Inventory</h5>
+                                <div class="col-md-6">
+                                    <label class="form-label">Regular Price</label>
+                                    {{ form.regular_price }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Sale Price</label>
+                                    {{ form.sale_price }}
+                                </div>
+
+                                
+
+                                <h5 class="card-title mb-3 mt-4 pt-3 border-top border-bottom pb-2">
+                                  Discount Schedule Date
+                               </h5>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Sale Start Date</label>
+                                    {{ form.sale_price_start }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Sale End Date</label>
+                                    {{ form.sale_price_end }}
+                                </div>
+
+
+
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <div class="row g-3">
+
+                                       
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Stock Qty</label>
+                                            {{ form.stock_quantity }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Low Stock Alert</label>
+                                            {{ form.low_stock_threshold }}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Stock Status</label>
+                                            {{ form.stock_status }}
+                                        </div>
+
+                                         <div class="col-md-12">
+                                            <div class="form-check form-switch mt-4">
+                                                {{ form.manage_stock }}
+                                                <label class="form-check-label" for="{{ form.manage_stock.id_for_label }}">Manage Stock</label>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                              
+
+
+                                 <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3">SEO Settings</h6>
+                                    <div class="row g-3">
+                                        <div class="col-12"><label class="form-label">Meta Title</label>{{ form.meta_title }}</div>
+                                        <div class="col-12"><label class="form-label">Meta Keywords</label>{{ form.meta_keywords }}</div>
+                                        <div class="col-12"><label class="form-label">Meta Description</label>{{ form.meta_description }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- FAQs Section -->
+                                <h5 class="card-title mb-3 mt-4 pt-3 border-top border-bottom pb-2">Frequently Asked Questions</h5>
+                                <div class="faqsDisplay">
+                                    {% if item and item.faqs %}
+                                        {% for faq in item.faqs %}
+                                            <div class="card mb-2 faqItem">
+                                                <div class="card-body p-2">
+                                                    <div class="row">
+                                                        <div class="col-11">
+                                                            <input type="text" name="faqs[{{ forloop.counter0 }}][question]" class="form-control mb-2" placeholder="Question" value="{{ faq.question }}">
+                                                            <textarea name="faqs[{{ forloop.counter0 }}][answer]" class="form-control" rows="2" placeholder="Answer">{{ faq.answer }}</textarea>
+                                                        </div>
+                                                        <div class="col-1 d-flex align-items-start">
+                                                            <button type="button" class="btn btn-danger btn-sm removeFaq"><i class="bi bi-trash"></i></button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm addFaq"><i class="bi bi-plus-circle"></i> Add FAQ</button>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Media</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">SKU</label>
+                                    {{ form.sku }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Brand</label>
+                                    {{ form.brand }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Category</label>
+                                    {{ form.category }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Display Order</label>
+                                    {{ form.order_level }}
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ form.is_featured }}
+                                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">Featured Product</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ form.is_virtual }}
+                                        <label class="form-check-label" for="{{ form.is_virtual.id_for_label }}">Virtual Product</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active</label>
+                                    </div>
+                                </div>
+
+                                <h5 class="card-title mb-3 mt-4 pt-3 border-top border-bottom pb-2">Media</h5>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Thumbnail</label>
+                                    {{ form.thumbnail }}
+                                    <div class="text-center mt-2">
+                                        <img src="{% if item %}{{ item.thumbnail_url }}{% else %}{% static 'default/noimage.png' %}{% endif %}" class="img-fluid border" id="thumbPreview">
+                                    </div>
+                                </div>
+
+
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Gallery Images</label>
+                                    {% if item and item.gallery %}
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        {% for img_url in item.gallery %}
+                                        <div class="position-relative border rounded overflow-hidden" style="width: 100px; height: 100px;">
+                                            <img src="{{ img_url }}" class="w-100 h-100" style="object-fit: cover;" alt="Gallery Image">
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-light border mb-3 text-muted small">
+                                        <i class="bi bi-images me-1"></i> No gallery images uploaded yet.
+                                    </div>
+                                    {% endif %}
+                                    <input type="file" name="gallery" class="form-control" multiple accept="image/*" id="galleryInput">
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle"></i> Hold Ctrl/Cmd to select multiple images. 
+                                    </small>
+                                    <div class="d-flex flex-wrap gap-2 mt-2" id="newGalleryPreview"></div>
+                                </div>
+
+
+
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i> {% if item %}Update{% else %}Create{% endif %} Product
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        function toggleSections() {
+            const type = $('#id_product_type').val();
+            $('#groupedSection').toggle(type === 'grouped');
+            $('#digitalSection').toggle(type === 'digital');
+        }
+        $('#id_product_type').on('change', toggleSections);
+        toggleSections();
+
+        $('#thumbInput').on('change', function() {
+            if (this.files && this.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) { $('#thumbPreview').attr('src', e.target.result); }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        let bundleIndex = {{ item.bundle_items.count|default:0 }};
+        $('.addBundle').click(() => {
+            let options = `{% for p in all_products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}`;
+            $('.bundleDisplay').append(`<div class="row mb-2 bundleItem">
+                <div class="col-6"><select name="bundle_products[${bundleIndex}][product_id]" class="form-select"><option value="">Select Product</option>${options}</select></div>
+                <div class="col-4"><input type="number" name="bundle_products[${bundleIndex}][quantity]" class="form-control" value="1" min="1"></div>
+                <div class="col-2"><button type="button" class="btn btn-danger btn-sm removeBundle"><i class="bi bi-trash"></i></button></div>
+            </div>`);
+            bundleIndex++;
+        });
+        $(document).on('click', '.removeBundle', function() { $(this).closest('.bundleItem').remove(); });
+
+        $('.addFaq').click(() => {
+            let idx = Date.now();
+            $('.faqsDisplay').append(`<div class="card mb-2 faqItem">
+                <div class="card-body p-2">
+                    <div class="row">
+                        <div class="col-11">
+                            <input type="text" name="faqs[${idx}][question]" class="form-control mb-2" placeholder="Question">
+                            <textarea name="faqs[${idx}][answer]" class="form-control" rows="2" placeholder="Answer"></textarea>
+                        </div>
+                        <div class="col-1 d-flex align-items-start">
+                            <button type="button" class="btn btn-danger btn-sm removeFaq"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        });
+        $(document).on('click', '.removeFaq', function() { $(this).closest('.faqItem').remove(); });
+
+        $('#productForm').on('submit', function(e) {
+            e.preventDefault();
+            $('.text-danger').remove(); $('.is-invalid').removeClass('is-invalid');
+            const formData = new FormData(this);
+            const submitBtn = $('#submitBtn');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+
+            $.ajax({
+                type: 'POST', url: $(this).attr('action'), data: formData, contentType: false, processData: false,
+                headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+                success: function(res) {
+                    if(res.success) { toastr.success(res.message); setTimeout(() => window.location.href = '{% url "products:product_list" %}', 1500); }
+                },
+                error: function(xhr) {
+                    submitBtn.prop('disabled', false).html(originalText);
+                    if(xhr.responseJSON?.errors) {
+                        $.each(xhr.responseJSON.errors, function(field, err) {
+                            let target = $(`[name="${field}"]`).first();
+                            if(target.length === 0) target = $(`[name^="${field}"]`).first();
+                            target.addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                        });
+                        toastr.error('Please fix the form errors');
+                    } else { toastr.error('Something went wrong'); }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

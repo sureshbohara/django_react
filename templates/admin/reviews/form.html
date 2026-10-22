@@ -1,0 +1,203 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}{% if item %}Edit{% else %}Create{% endif %} Review{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'reviews:review_list' %}">Reviews</a></li>
+            <li class="breadcrumb-item active">{% if item %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"><i class="bi bi-star me-2"></i> {% if item %}Edit{% else %}Create{% endif %} Review</h6>
+        <a href="{% url 'reviews:review_list' %}" class="btn btn-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+    </div>
+
+    <div class="card-body bg-light p-3">
+        <form id="reviewForm" method="POST" enctype="multipart/form-data"
+              action="{% if item %}{% url 'reviews:review_update' item.id %}{% else %}{% url 'reviews:review_create' %}{% endif %}">
+            {% csrf_token %}
+
+            <div class="row g-3">
+                
+                <!-- LEFT COLUMN -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Customer & Review Details</h5>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Address</label>
+                                    {{ form.email }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address</label>
+                                    {{ form.address }}
+                                </div>
+
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3"><i class="bi bi-chat-left-text me-1"></i> Review Content</h6>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Main Review <span class="text-danger">*</span></label>
+                                    {{ form.review }}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Additional Content</label>
+                                    {{ form.content }}
+                                    <small class="text-muted d-block mt-1">Optional extra details or description</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Media</h5>
+
+                            <div class="row g-3">
+                                
+                           
+                                <div class="col-12">
+                                    <label class="form-label">Rating <span class="text-danger">*</span></label>
+                                    <select name="rating" class="form-select {% if form.rating.errors %}is-invalid{% endif %}" required>
+                                        <option value="">Select Rating</option>
+                                        <option value="1" {% if item and item.rating == 1 %}selected{% endif %}>1 Star</option>
+                                        <option value="2" {% if item and item.rating == 2 %}selected{% endif %}>2 Stars</option>
+                                        <option value="3" {% if item and item.rating == 3 %}selected{% endif %}>3 Stars</option>
+                                        <option value="4" {% if item and item.rating == 4 %}selected{% endif %}>4 Stars</option>
+                                        <option value="5" {% if item and item.rating == 5 %}selected{% endif %}>5 Stars</option>
+                                    </select>
+                                </div>
+
+                               
+                                <div class="col-12">
+                                    <label class="form-label">Display On</label>
+                                    <select name="display_on" class="form-select {% if form.display_on.errors %}is-invalid{% endif %}">
+                                        <option value="">Select Location</option>
+                                        <option value="default" {% if item and item.display_on == 'default' %}selected{% endif %}>Default</option>
+                                        <option value="home" {% if item and item.display_on == 'home' %}selected{% endif %}>Home Page</option>
+                                        <option value="product" {% if item and item.display_on == 'product' %}selected{% endif %}>Product Page</option>
+                                        <option value="package" {% if item and item.display_on == 'package' %}selected{% endif %}>Package Page</option>
+                                        <option value="testimonial" {% if item and item.display_on == 'testimonial' %}selected{% endif %}>Testimonial Section</option>
+                                        <option value="about" {% if item and item.display_on == 'about' %}selected{% endif %}>About Page</option>
+                                    </select>
+                                    <small class="text-muted d-block mt-1">Where to show this review</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Display Order</label>
+                                    {{ form.order_level }}
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active Review</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <label class="form-label">Review Image</label>
+                                    {{ form.image }}
+                                    <small class="text-muted d-block mt-1">Optional • Max 2MB • JPG/PNG/WebP</small>
+                                </div>
+
+                                <div class="col-12 text-center">
+                                    <img src="{% if item and item.has_image %}{{ item.image_url }}{% else %}{% static 'default/noimage.png' %}{% endif %}"
+                                         alt="Preview" class="img-fluid preview-image border rounded" id="imagePreview">
+                                </div>
+
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i>
+                                        {% if item %}Update{% else %}Create{% endif %} Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Preview
+    $('#imageInput').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                $('#imagePreview').attr('src', e.target.result);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // AJAX Submit
+    $('#reviewForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove();
+        $('.is-invalid').removeClass('is-invalid');
+
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        const originalBtnText = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'),
+            data: formData,
+            contentType: false,
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if (res.success) {
+                    toastr.success(res.message);
+                    setTimeout(() => {
+                        window.location.href = '{% url "reviews:review_list" %}';
+                    }, 1500);
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                if (xhr.responseJSON?.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        let input = $(`[name="${field}"]`);
+                        if (input.length) {
+                            input.addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                        }
+                    });
+                    toastr.error('Please fix the form errors');
+                } else {
+                    toastr.error(xhr.responseJSON?.message || 'Something went wrong');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}{% if item %}Edit{% else %}Create{% endif %} Blog Post{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'blogs:post_list' %}">Blog Posts</a></li>
+            <li class="breadcrumb-item active">{% if item %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0">📝 {% if item %}Edit{% else %}Create{% endif %} Blog Post</h6>
+        <a href="{% url 'blogs:post_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    
+    <div class="card-body bg-light p-3">
+        <form id="postForm" method="POST" enctype="multipart/form-data" action="{% if item %}{% url 'blogs:post_update' item.id %}{% else %}{% url 'blogs:post_create' %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                
+                <!-- LEFT COLUMN: Content -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Post Content</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Post Title <span class="text-danger">*</span></label>
+                                    {{ form.title }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Excerpt</label>
+                                    {{ form.excerpt }}
+                                    <small class="text-muted d-block mt-1">Brief summary shown in blog lists</small>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description (Main Content) <span class="text-danger">*</span></label>
+                                    {{ form.description }}
+                                </div>
+
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3">🔍 SEO Settings</h6>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Title</label>
+                                            {{ form.meta_title }}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Keywords</label>
+                                            {{ form.meta_keywords }}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Description</label>
+                                            {{ form.meta_description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Settings & Media -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Media</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Category <span class="text-danger">*</span></label>
+                                    {{ form.category }}
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Featured Image</label>
+                                    {{ form.image }}
+                                    <small class="text-muted d-block mt-1">Max: 2MB • JPG, PNG, WebP</small>
+                                </div>
+
+                                <div class="col-12 text-center">
+                                    <img src="{% if item and item.image_url %}{{ item.image_url }}{% else %}{% static 'default/noimage.png' %}{% endif %}" 
+                                         alt="Preview" class="img-fluid preview-image border rounded" id="imagePreview" >
+                                </div>
+
+                                <div class="col-12 mt-3 pt-2 border-top">
+                                    <h6 class="mb-2">Visibility</h6>
+                                    <div class="form-check form-switch mb-2">
+                                        {{ form.is_featured }}
+                                        <label class="form-check-label" for="{{ form.is_featured.id_for_label }}">Mark as Featured Post</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">Display Order</label>
+                                    {{ form.order_level }}
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i> {% if item %}Update{% else %}Create{% endif %} Post
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+    $('#imageInput').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) { $('#imagePreview').attr('src', e.target.result); }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+
+    $('#postForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove(); 
+        $('.is-invalid').removeClass('is-invalid');
+        
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        const originalBtnText = submitBtn.html();
+        
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+        
+        $.ajax({
+            type: 'POST', 
+            url: $(this).attr('action'), 
+            data: formData, 
+            contentType: false, 
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if(res.success) { 
+                    toastr.success(res.message); 
+                    setTimeout(() => window.location.href = '{% url "blogs:post_list" %}', 1500); 
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                if(xhr.responseJSON?.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        let target = $(`[name="${field}"]`).first();
+                        if(target.length === 0 && field === 'description') target = $('.summernote').parent();
+                        
+                        if(target.length) {
+                            target.addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                        }
+                    });
+                    toastr.error('Please fix the form errors');
+                } else {
+                    toastr.error('Something went wrong!');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

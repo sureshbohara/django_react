@@ -1,0 +1,106 @@
+{% extends "layouts/auth_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="wrapper">
+    <main class="authentication-content">
+        <div class="container-fluid">
+            <div class="authentication-card">
+                <div class="card shadow rounded-0 overflow-hidden">
+                    <div class="row g-0">
+                        <div class="col-lg-6 bg-light d-flex align-items-center justify-content-center">
+                            <img src="{% static 'default/noimage.png' %}" class="img-fluid" alt="Logo" style="width: 80%;">
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card-body p-4 p-sm-5">
+                                <h5 class="card-title">Sign In</h5>
+                                <p class="card-text">See your growth and get consulting support!</p>
+                                
+                                <form class="form-body" method="POST" id="adminLoginForm" action="{% url 'accounts:login' %}">
+                                    {% csrf_token %}
+                                    <div class="login-separater text-center mb-4">
+                                        <span>SIGN IN WITH EMAIL</span><hr>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Email Address</label>
+                                            <input type="email" name="email" class="form-control radius-30 ps-5" placeholder="Email Address" required>
+                                            <span class="email-error text-danger small"></span>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Enter Password</label>
+                                            <div class="position-relative">
+                                                <input type="password" id="password" name="password" class="form-control radius-30 ps-5" placeholder="Enter Password" required>
+                                                <span class="passwordShow" onclick="togglePassword()" style="position: absolute; right: 15px; top: 38px; cursor: pointer;">
+                                                    <i class="bi bi-eye-slash" id="eye"></i>
+                                                </span>
+                                            </div>
+                                            <span class="password-error text-danger small"></span>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="remember" id="rememberMe" value="1">
+                                                <label class="form-check-label" for="rememberMe">Remember Me</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-grid">
+                                                <button type="submit" id="loginBtn" class="btn btn-primary radius-30">
+                                                    <span class="btn-text">Sign In</span>
+                                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function togglePassword() {
+        const pw = document.getElementById('password');
+        const eye = document.getElementById('eye');
+        if (pw.type === 'password') { pw.type = 'text'; eye.className = 'bi bi-eye'; } 
+        else { pw.type = 'password'; eye.className = 'bi bi-eye-slash'; }
+    }
+
+    $('#adminLoginForm').on('submit', function(e){
+        e.preventDefault();
+        let form = $(this), btn = $('#loginBtn'), btnText = btn.find('.btn-text'), spinner = btn.find('.spinner-border');
+        btn.prop('disabled', true); btnText.addClass('d-none'); spinner.removeClass('d-none');
+        $('.email-error, .password-error').text('').hide(); $('.is-invalid').removeClass('is-invalid');
+        
+        $.ajax({
+            url: form.attr('action'), type: 'POST', data: new FormData(this), contentType: false, processData: false,
+            headers: { 'X-CSRFToken': $('meta[name="csrf-token"]').attr('content') },
+            success: function(res){
+                if(res.success){
+                    toastr.success(res.message);
+                    setTimeout(() => window.location.href = res.redirect, 1000); 
+                } else { handleErrors(res.errors); }
+            },
+            error: function(xhr){
+                let res = xhr.responseJSON;
+                if(res?.errors) handleErrors(res.errors);
+                toastr.error(res?.message || 'Login failed.');
+            },
+            complete: function(){ btn.prop('disabled', false); btnText.removeClass('d-none'); spinner.addClass('d-none'); }
+        });
+    });
+
+    function handleErrors(errors){
+        $.each(errors, function(field, messages){
+            let errorSpan = $('.' + field + '-error');
+            if(errorSpan.length){ errorSpan.text(messages[0]).show(); $('[name="'+field+'"]').addClass('is-invalid'); }
+        });
+    }
+</script>
+{% endblock %}

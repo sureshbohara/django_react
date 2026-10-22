@@ -1,0 +1,119 @@
+{% load static %}
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar hidden-xs" id="announcementBar">
+  <div class="container">
+    <div class="announcement-content">
+      <span><i class="bi bi-gift-fill me-2"></i> EXTRA 15% OFF YOUR FIRST ORDER - USE CODE: WELCOME15</span>
+      <button class="btn-close btn-close-white" onclick="closeAnnouncement()" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header class="header header-desktop">
+  <nav class="navbar navbar-expand-lg p-0">
+    <div class="container">
+      <a class="navbar-brand p-0" href="{% url 'frontend:home' %}">
+        {% if site_settings.logo_url %}
+          <img src="{{ site_settings.logo_url }}" alt="{{ site_settings.system_name }}" height="50">
+        {% endif %}
+      </a>
+      <div class="collapse navbar-collapse" id="navbarContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-headset"></i> Help</a></li>
+          <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-truck"></i> Track Order</a></li>
+          <li class="nav-item">
+            <a class="nav-link position-relative" href="{% url 'frontend:cart' %}">
+              <i class="bi bi-bag"></i> Cart
+              <span class="cart-count" id="header-cart-count">{{ cart_total_items|default:0 }}</span>
+            </a>
+          </li>
+
+
+          {% if frontend_customer %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="customerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle" style="font-size: 1.2rem;"></i> 
+                <span class="d-none d-md-inline">{{ frontend_customer.name|truncatechars:15 }}</span>
+                <span class="d-md-none">Account</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="customerDropdown" style="border-radius: var(--radius-sm); min-width: 200px;">
+                <li><a class="dropdown-item py-2" href="#"><i class="bi bi-person me-2 text-muted"></i> My Profile</a></li>
+                <li><a class="dropdown-item py-2" href="#"><i class="bi bi-bag me-2 text-muted"></i> My Orders</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <a class="dropdown-item py-2 text-danger" href="{% url 'frontend:customer_logout' %}">
+                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                  </a>
+                </li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#accountModal">
+                <i class="bi bi-person"></i> Login
+              </a>
+            </li>
+          {% endif %}
+
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!--  MOBILE HEADER -->
+<div class="header-mobile d-lg-none">
+  <div class="container">
+    
+    <div class="d-flex align-items-center justify-content-between">
+      <a class="navbar-brand p-0" href="{% url 'frontend:home' %}">
+        {% if site_settings.logo_url %}
+          <img src="{{ site_settings.logo_url }}" alt="Logo" height="40">
+        {% else %}
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; color: var(--theme-color); margin: 0;">{{ site_settings.system_name|default:"Caroline's" }}</h2>
+        {% endif %}
+      </a>
+      <button class="menu-toggle-btn border-0" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav" aria-label="Menu">
+        <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+      </button>
+    </div>
+
+    <div class="pb-2">
+      <form class="d-flex w-100" role="search" action="{% url 'frontend:shop' %}">
+        <input class="form-control mobile-search-input" type="search" name="search" placeholder="Search perfumes, skincare...">
+        <button class="btn btn-search-mobile" type="submit"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- STICKY SUB-HEADER -->
+<div class="sub-header-sticky d-none d-lg-block">
+  <div class="container">
+    <div class="sub-header-inner">
+      <button class="all-category-btn" type="button">
+        <i class="bi bi-grid-fill"></i> <span>All Categories</span>
+      </button>
+      <div class="search-wrapper">
+        <form class="search-form" role="search" action="{% url 'frontend:shop' %}">
+          <input id="searchInputDesktop" type="search" class="search-input" name="search" placeholder="Search for perfumes, skincare, makeup...">
+          <button type="submit" class="search-btn"><i class="bi bi-search"></i></button>
+        </form>
+      </div>
+      <div class="header-actions">
+        <a href="{% url 'frontend:shop' %}?sort=newest" class="action-link"><i class="bi bi-fire"></i> <span>Best Sellers</span></a>
+        <a href="tel:{{ site_settings.phone }}" class="action-link hotline-link">
+          <i class="bi bi-telephone-fill"></i>
+          <div class="hotline-text">
+            <span class="label">Hotline</span>
+            <span class="number">{{ site_settings.phone|default:"+977 9709065971" }}</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

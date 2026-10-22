@@ -1,0 +1,167 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}{% if brand %}Edit{% else %}Create{% endif %} Brand{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'brands:brand_list' %}">Brands</a></li>
+            <li class="breadcrumb-item active">{% if brand %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"> {% if brand %}Edit{% else %}Create{% endif %} Brand</h6>
+        <a href="{% url 'brands:brand_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    
+    <div class="card-body bg-light p-3">
+        <form id="brandForm" method="POST" enctype="multipart/form-data" action="{% if brand %}{% url 'brands:brand_update' brand.id %}{% else %}{% url 'brands:brand_create' %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                
+             
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Brand Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Brand Name <span class="text-danger">*</span></label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Slug</label>
+                                    {{ form.slug }}
+                                    <small class="text-muted d-block mt-1">Auto-generated from name if empty</small>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Website</label>
+                                    {{ form.website }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    {{ form.description }}
+                                </div>
+                                
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3">🔍 SEO Settings</h6>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Title</label>
+                                            {{ form.meta_title }}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Keywords</label>
+                                            {{ form.meta_keywords }}
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Meta Description</label>
+                                            {{ form.meta_description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+           
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Media</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Brand Logo</label>
+                                    {{ form.logo }}
+                                    <small class="text-muted d-block mt-1">Max: 2MB • JPG, PNG, WebP</small>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <img src="{% if brand and brand.logo_url %}{{ brand.logo_url }}{% else %}{% static 'default/noimage.png' %}{% endif %}" 
+                                         alt="Preview" class="img-fluid preview-image border" id="imagePreview" 
+                                         style="max-height: 150px; width: 100%; object-fit: contain;">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Display Order</label>
+                                    {{ form.order_level }}
+                                    <small class="text-muted d-block mt-1">Lower numbers appear first</small>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active Brand</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i> {% if brand %}Update{% else %}Create{% endif %} Brand
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Preview Logic
+    $('#imageInput').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) { 
+                $('#imagePreview').attr('src', e.target.result); 
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // AJAX Submit Logic
+    $('#brandForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove(); 
+        $('.is-invalid').removeClass('is-invalid');
+        
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        const originalBtnText = submitBtn.html();
+        
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+        
+        $.ajax({
+            type: 'POST', 
+            url: $(this).attr('action'), 
+            data: formData, 
+            contentType: false, 
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if(res.success) { 
+                    toastr.success(res.message); 
+                    setTimeout(() => window.location.href = '{% url "brands:brand_list" %}', 1500); 
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                if(xhr.responseJSON?.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        $(`[name="${field}"]`).addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                    });
+                    toastr.error('Please fix the form errors');
+                } else {
+                    toastr.error('Something went wrong!');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

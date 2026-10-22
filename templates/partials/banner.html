@@ -1,0 +1,45 @@
+<section class="banner-section">
+  <div class="container">
+    <div class="row g-0">
+      <aside class="col-lg-2 sidebar d-none d-lg-block">
+        <nav aria-label="Product Categories">
+          <ul class="list-unstyled parent_menu">
+            {% for category in categories %}
+            <li>
+              <a href="{% url 'frontend:shop' %}?category={{ category.slug }}">
+                {{ category.name }} {% if category.children.all %}<i class="bi bi-chevron-right"></i>{% endif %}
+              </a>
+              {% if category.children.all %}
+              <ul class="child_menu list-unstyled">
+                {% for child in category.children.all %}
+                <li><a href="{% url 'frontend:shop' %}?category={{ child.slug }}">{{ child.name }}</a></li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </li>
+            {% empty %}
+            <li><a href="{% url 'frontend:shop' %}">All Categories</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="col-12 col-lg-10 p-0">
+        <div class="owl-carousel owl-theme" id="bannerCarousel">
+          {% for banner in banners %}
+          <div class="item banner-item">
+            <img src="{{ banner.image.url }}" alt="{{ banner.title|default:'Banner' }}" loading="lazy">
+            {% if banner.title %}
+            <div class="banner-overlay" style="position: absolute; bottom: 20%; left: 5%; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);">
+              <!-- <h2>{{ banner.title }}</h2>
+              <p>{{ banner.subtitle }}</p> -->
+            </div>
+            {% endif %}
+          </div>
+
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

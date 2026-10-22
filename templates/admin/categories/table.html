@@ -1,0 +1,68 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th width="80">Image</th>
+                    <th>Name</th>
+                    <th>Parent</th>
+                    <th>Display On</th>
+                    <th width="80">Order</th>
+                    <th width="100">Status</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in page_obj %}
+                <tr>
+                    <td>
+                        <img src="{{ category.image_url }}" width="60" height="40" 
+                             style="object-fit: cover; border-radius: 4px;">
+                    </td>
+                    <td>
+                        <strong>{{ category.name }}</strong><br>
+                        <small class="text-muted">/{{ category.slug }}</small>
+                    </td>
+                    <td>{{ category.parent.name|default:"None (Root)" }}</td>
+                    <td><span class="badge bg-info text-dark">{{ category.display_on|capfirst }}</span></td>
+                    <td>
+                        <input type="number" name="order_level" value="{{ category.order_level }}"
+                            data-id="{{ category.id }}" data-original="{{ category.order_level }}"
+                            class="form-control form-control-sm order-level-input" style="width: 60px;">
+                    </td>
+                    <td>
+                        <form class="status-form" data-id="{{ category.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ category.id }}">
+                            <input type="checkbox" {% if category.status %}checked{% endif %} 
+                                data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'categories:category_update' category.id %}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{% url 'categories:category_delete' category.id %}" 
+                                  method="POST" id="deleteForm{{ category.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger"
+                                    onclick="confirmDelete(event, 'deleteForm{{ category.id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No categories found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+     {% include 'layouts/includes/pagination.html' %}
+</div>

@@ -1,0 +1,26 @@
+<div class="col-12">
+    <form id="filterForm" method="GET" class="row g-3 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control form-control-sm" placeholder="🔍 Search by name or SKU..." value="{{ filters.search|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <select name="product_type" class="form-select form-select-sm">
+                <option value="">All Types</option>
+                <option value="simple" {% if filters.product_type == 'simple' %}selected{% endif %}>Simple</option>
+                <option value="variable" {% if filters.product_type == 'variable' %}selected{% endif %}>Variable</option>
+                <option value="grouped" {% if filters.product_type == 'grouped' %}selected{% endif %}>Grouped</option>
+                <option value="digital" {% if filters.product_type == 'digital' %}selected{% endif %}>Digital</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Status</option>
+                <option value="1" {% if filters.status == '1' %}selected{% endif %}>✅ Active</option>
+                <option value="0" {% if filters.status == '0' %}selected{% endif %}>❌ Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-sm text-white">✕ Reset</a>
+        </div>
+    </form>
+</div>

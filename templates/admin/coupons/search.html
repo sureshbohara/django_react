@@ -1,0 +1,26 @@
+<div class="col-12">
+    <form id="filterForm" method="GET" class="row g-3 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="code" class="form-control form-control-sm text-uppercase" 
+                   placeholder="🔍 Search by code..." 
+                   value="{{ filters.code|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <select name="discount_type" class="form-select form-select-sm">
+                <option value="">All Types</option>
+                <option value="fixed" {% if filters.discount_type == 'fixed' %}selected{% endif %}>💵 Fixed</option>
+                <option value="percentage" {% if filters.discount_type == 'percentage' %}selected{% endif %}>📊 Percentage</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Status</option>
+                <option value="1" {% if filters.status == '1' %}selected{% endif %}>✅ Active</option>
+                <option value="0" {% if filters.status == '0' %}selected{% endif %}>❌ Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <a href="{% url 'coupons:coupon_list' %}" class="btn btn-primary btn-sm text-white">✕ Reset</a>
+        </div>
+    </form>
+</div>

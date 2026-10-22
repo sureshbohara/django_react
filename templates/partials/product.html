@@ -1,0 +1,25 @@
+ {% if new_arrivals %}
+  <section class="product_section section">
+    <div class="container">
+      <div class="offer-banner"><span>New Arrivals</span></div>
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in new_arrivals %}
+        <div class="col">
+          <div class="product-card">
+            <div class="img-wrapper">
+              <span class="product-badge" style="background-color: #28a745;">New</span>
+              <a href="{% url 'frontend:product_detail' product.slug %}"><img src="{{ product.thumbnail_url }}" alt="{{ product.name }}"></a>
+            </div>
+            <h3>{{ product.name|truncatechars:45 }}</h3>
+            <div class="price-wrap">
+              <span class="current-price">Rs. {{ product.final_price }}</span>
+              {% if product.is_on_sale %}<span class="original-price">Rs. {{ product.regular_price }}</span>{% endif %}
+            </div>
+            <button class="add_to_cart" data-product-id="{{ product.id }}"><i class="bi bi-bag-plus"></i> Add To Cart</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}

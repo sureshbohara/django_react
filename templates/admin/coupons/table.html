@@ -1,0 +1,124 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Validity</th>
+                    <th>Usage</th>
+                    <th width="100">Status</th>
+                    <th width="140">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in page_obj %}
+                <tr>
+                    <td>
+                        <strong class="text-primary" style="letter-spacing: 1px;">{{ coupon.code }}</strong>
+                        {% if coupon.is_active %}
+                            <span class="badge bg-success ms-1">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary ms-1">Expired</span>
+                        {% endif %}
+                        {% if coupon.description %}
+                            <br><small class="text-muted">{{ coupon.description|truncatechars:40 }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if coupon.discount_type == 'percentage' %}
+                            <span class="badge bg-info fs-6">{{ coupon.discount_value }}%</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark fs-6">Rs. {{ coupon.discount_value }}</span>
+                        {% endif %}
+                        {% if coupon.min_order_amount %}
+                            <br><small class="text-muted">Min: Rs. {{ coupon.min_order_amount }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if coupon.start_date or coupon.end_date %}
+                            <small>
+                                {% if coupon.start_date %}{{ coupon.start_date|date:"M d, Y" }}{% else %}∞{% endif %}
+                                <br>to
+                                {% if coupon.end_date %}{{ coupon.end_date|date:"M d, Y" }}{% else %}∞{% endif %}
+                            </small>
+                        {% else %}
+                            <span class="text-muted">No limit</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ coupon.used_count }}</strong> / 
+                        {% if coupon.usage_limit %}
+                            {{ coupon.usage_limit }}
+                        {% else %}
+                            ∞
+                        {% endif %}
+                        <br><small class="text-muted">Per user: {{ coupon.usage_limit_per_user }}</small>
+                    </td>
+                    <td>
+                        <form class="status-form" data-id="{{ coupon.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ coupon.id }}">
+                            <input type="checkbox" {% if coupon.status %}checked{% endif %} 
+                                data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'coupons:coupon_update' coupon.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button type="button" class="btn btn-outline-warning" 
+                                    onclick="resetUsage({{ coupon.id }})" title="Reset Usage Count">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                            <form action="{% url 'coupons:coupon_delete' coupon.id %}" method="POST" 
+                                  id="deleteForm{{ coupon.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete(event, 'deleteForm{{ coupon.id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No coupons found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+     {% include 'layouts/includes/pagination.html' %}
+</div>
+
+<script>
+function resetUsage(id) {
+    Swal.fire({
+        title: 'Reset Usage Count?',
+        text: 'This will set used_count to 0.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        confirmButtonText: 'Yes, reset it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "{% url 'coupons:coupon_reset_usage' %}",
+                method: 'POST',
+                headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+                data: {id: id},
+                success: function(res) {
+                    if (res.success) {
+                        toastr.success(res.message);
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                }
+            });
+        }
+    });
+}
+</script>

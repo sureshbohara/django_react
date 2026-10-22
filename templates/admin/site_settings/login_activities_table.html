@@ -1,0 +1,92 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th width="40"><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                    <th>User</th>
+                    <th>Login At</th>
+                    <th>Logout At</th>
+                    <th>IP Address</th>
+                    <th>OS / Browser</th>
+                    <th>Device</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for activity in page_obj %}
+                <tr>
+                    <td><input type="checkbox" class="form-check-input row-checkbox" value="{{ activity.id }}"></td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-success rounded-circle d-flex align-items-center justify-content-center text-white" style="width:32px; height:32px; font-size:12px;">
+                                {{ activity.user.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ activity.user.username }}</div>
+                                <small class="text-muted">{{ activity.user.email|truncatechars:20 }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small">
+                            <div>{{ activity.login_at|date:"M d, Y" }}</div>
+                            <div class="text-muted">{{ activity.login_at|date:"H:i:s" }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if activity.logout_at %}
+                            <div class="small">
+                                <div>{{ activity.logout_at|date:"M d, Y" }}</div>
+                                <div class="text-muted">{{ activity.logout_at|date:"H:i:s" }}</div>
+                            </div>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success"><i class="bi bi-circle-fill small me-1"></i>Active</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <code class="small">{{ activity.ip_address }}</code><br>
+                        <a href="https://ipinfo.io/{{ activity.ip_address }}" target="_blank" class="small text-decoration-none"><i class="bi bi-box-arrow-up-right"></i> Lookup</a>
+                    </td>
+                    <td>
+                        <div class="small">
+                            <span class="badge bg-warning-subtle text-info mb-1">{{ activity.os|default:"Unknown" }}</span><br>
+                            <span class="badge bg-warning-subtle text-warning">{{ activity.browser|default:"Unknown" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if activity.device_type == 'mobile' %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis"><i class="bi bi-phone"></i> Mobile</span>
+                        {% elif activity.device_type == 'tablet' %}
+                            <span class="badge bg-primary-subtle text-primary-emphasis"><i class="bi bi-tablet"></i> Tablet</span>
+                        {% else %}
+                            <span class="badge bg-light text-dark border"><i class="bi bi-display"></i> Desktop</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-2"></i>No login activities found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-end mt-3">
+        <ul class="pagination pagination-sm">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% for key, value in filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in filters.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>

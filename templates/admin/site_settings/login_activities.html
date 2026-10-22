@@ -1,0 +1,46 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}Login Activities{% endblock %}
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Login Activities</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"> Login Activities</h6>
+        <button class="btn btn-danger btn-sm" onclick="bulkDelete()"><i class="bi bi-trash"></i> Delete Selected</button>
+    </div>
+    <div class="card-body bg-light p-3">
+        <div class="row mb-3">{% include 'admin/site_settings/login_activities_search.html' %}</div>
+        <div class="row">{% include 'admin/site_settings/login_activities_table.html' %}</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#selectAll').on('change', function() { $('.row-checkbox').prop('checked', this.checked); });
+    });
+
+    function bulkDelete() {
+        const ids = $('.row-checkbox:checked').map(function() { return this.value; }).get();
+        if (ids.length === 0) { alert('Please select at least one record'); return; }
+        if (confirm(`Delete ${ids.length} selected activities?`)) {
+            fetch("{% url 'login_activities:bulk_delete' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ ids: ids })
+            })
+            .then(res => res.json())
+            .then(data => { if (data.success) location.reload(); else alert('Bulk delete failed'); });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}{% if banner %}Edit{% else %}Create{% endif %} Banner{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'banners:banner_list' %}">Banners</a></li>
+            <li class="breadcrumb-item active">{% if banner %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0">{% if banner %}Edit{% else %}Create{% endif %} Banner</h6>
+        <a href="{% url 'banners:banner_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    
+    <div class="card-body bg-light p-3">
+        <form id="bannerForm" method="POST" enctype="multipart/form-data" action="{% if banner %}{% url 'banners:banner_update' banner.id %}{% else %}{% url 'banners:banner_create' %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Banner Details</h5>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">Title</label>{{ form.title }}</div>
+                                <div class="col-12"><label class="form-label">Sub Title</label>{{ form.subtitle }}</div>
+                                <div class="col-12"><label class="form-label">Description</label>{{ form.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings & Media</h5>
+                            <div class="row g-3">
+                                <div class="col-12"><label class="form-label">Display Order</label>{{ form.order_level }}</div>
+                                <div class="col-12"><label class="form-label">Status</label>{{ form.status }}</div>
+                                <div class="col-12">
+                                    <label class="form-label">Banner Image</label>
+                                    {{ form.image }}
+                                    <small class="text-muted d-block mt-1">Optional • Max 2MB • JPG/PNG/WebP</small>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <img src="{% if banner and banner.image_url %}{{ banner.image_url }}{% else %}{% static 'default/noimage.png' %}{% endif %}" alt="Preview" class="img-fluid preview-image border" id="imagePreview">
+                                </div>
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                                        <i class="bi bi-save me-2"></i> {% if banner %}Update{% else %}Create{% endif %} Banner
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Preview Logic
+    $('input[type="file"]').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) { $('#imagePreview').attr('src', e.target.result); }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // AJAX Submit Logic
+    $('#bannerForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove(); 
+        $('.is-invalid').removeClass('is-invalid');
+        
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+        
+        $.ajax({
+            type: 'POST', 
+            url: $(this).attr('action'), 
+            data: formData, 
+            contentType: false, 
+            processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if(res.success) { 
+                    toastr.success(res.message); 
+                    setTimeout(() => window.location.href = '{% url "banners:banner_list" %}', 1500); 
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html('<i class="bi bi-save me-2"></i> {% if banner %}Update{% else %}Create{% endif %} Banner');
+                if(xhr.responseJSON?.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        $(`[name="${field}"]`).addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                    });
+                    toastr.error('Please fix the form errors');
+                } else {
+                    toastr.error('Something went wrong!');
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,303 @@
+{% load static %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 1. Owl Carousel Initialization
+    if (typeof $.fn.owlCarousel !== 'undefined') {
+        $('#bannerCarousel').owlCarousel({ loop: true, margin: 0, nav: false, dots: false, autoplay: true, autoplayTimeout: 6000, items: 1, animateOut: 'fadeOut' });
+        $('.review-carousel').owlCarousel({ loop: true, margin: 24, nav: false, dots: false, autoplay: true, responsive: { 0: { items: 1 }, 600: { items: 2 }, 1000: { items: 3 } } });
+        $('.item-carousel').owlCarousel({ loop: true, margin: 24, nav: false, dots: false, autoplay: true, responsive: { 0: { items: 2 }, 600: { items: 3 }, 1000: { items: 4 } } });
+    }
+
+    // 2. Countdown Timer
+    function startCountdown() {
+        const countDownDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000) + (14 * 60 * 60 * 1000);
+        const x = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            if(document.getElementById("days")) document.getElementById("days").innerText = days < 10 ? "0" + days : days;
+            if(document.getElementById("hours")) document.getElementById("hours").innerText = hours < 10 ? "0" + hours : hours;
+            if(document.getElementById("minutes")) document.getElementById("minutes").innerText = minutes < 10 ? "0" + minutes : minutes;
+            if(document.getElementById("seconds")) document.getElementById("seconds").innerText = seconds < 10 ? "0" + seconds : seconds;
+            
+            if (distance < 0) {
+                clearInterval(x);
+                const countdownEl = document.getElementById("countdown");
+                if(countdownEl) countdownEl.innerHTML = "<div class='time-box' style='width:100%'><div class='number'>EXPIRED</div></div>";
+            }
+        }, 1000);
+    }
+    if(document.getElementById("countdown")) startCountdown();
+
+    // 3. Form Elements Reference
+    const loginFormEl = document.getElementById('loginForm');
+    const registerFormEl = document.getElementById('registerForm');
+    const modalLabel = document.getElementById('accountModalLabel');
+
+  
+    if (loginFormEl) {
+        loginFormEl.addEventListener('submit', handleFrontendLogin);
+    }
+    if (registerFormEl) {
+        registerFormEl.addEventListener('submit', handleFrontendRegister);
+    }
+
+    // Toggle between Login and Register forms
+    if(document.getElementById('showRegister')) {
+        document.getElementById('showRegister').addEventListener('click', (e) => {
+            e.preventDefault(); 
+            loginFormEl.classList.add('d-none'); 
+            registerFormEl.classList.remove('d-none'); 
+            modalLabel.textContent = 'Create Account';
+        });
+    }
+    if(document.getElementById('showLogin')) {
+        document.getElementById('showLogin').addEventListener('click', (e) => {
+            e.preventDefault(); 
+            registerFormEl.classList.add('d-none'); 
+            loginFormEl.classList.remove('d-none'); 
+            modalLabel.textContent = 'Welcome Back';
+        });
+    }
+
+    // 4. Scroll to Top Button
+    const scrollBtn = document.getElementById("scrollTopBtn");
+    if(scrollBtn) {
+        window.addEventListener("scroll", () => {
+            scrollBtn.style.display = (document.body.scrollTop > 400 || document.documentElement.scrollTop > 400) ? "flex" : "none";
+        });
+        scrollBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+
+    // 5. Close Announcement Bar
+    window.closeAnnouncement = function() {
+        const bar = document.getElementById('announcementBar');
+        if (bar) {
+            bar.style.display = 'none';
+            localStorage.setItem('announcementBarClosed', 'true');
+        }
+    };
+    if (localStorage.getItem('announcementBarClosed') === 'true') {
+        const bar = document.getElementById('announcementBar');
+        if (bar) bar.style.display = 'none';
+    }
+
+    // 6. Helper Functions
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `custom-toast ${type}`;
+        toast.innerHTML = `<i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}"></i><span>${message}</span>`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+
+    // 7. ADD TO CART Logic
+    document.querySelectorAll('.add_to_cart').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            const qtyInput = document.getElementById('qty-input');
+            const qty = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+            
+            let variantId = null;
+            const activeVariantBtn = document.querySelector('.size-variant-btn.active');
+            if (activeVariantBtn) {
+                variantId = activeVariantBtn.getAttribute('data-variant-id');
+            }
+
+            let body = `product_id=${productId}&qty=${qty}`;
+            if (variantId && variantId !== '' && variantId !== 'None' && variantId !== 'undefined') {
+                body += `&variant_id=${variantId}`;
+            }
+
+            fetch("{% url 'frontend:add_to_cart' %}", {
+                method: "POST",
+                headers: { 
+                    "X-CSRFToken": getCookie('csrftoken'), 
+                    "Content-Type": "application/x-www-form-urlencoded" 
+                },
+                body: body
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const cartCountEl = document.getElementById('header-cart-count');
+                    if(cartCountEl) cartCountEl.textContent = data.cart_count;
+                    showToast(data.message || 'Added to cart successfully!');
+                    
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-circle"></i> Added!';
+                    this.style.background = '#198754'; 
+                    this.style.color = 'white'; 
+                    this.style.borderColor = '#198754';
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText; 
+                        this.style.background = ''; 
+                        this.style.color = ''; 
+                        this.style.borderColor = '';
+                    }, 2000);
+                } else {
+                    showToast('Failed to add to cart', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred', 'error');
+            });
+        });
+    });
+
+    // 8. Login Handler
+    function handleFrontendLogin(e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const errorMsg = document.getElementById('login-error');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if(errorMsg) errorMsg.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Logging in...';
+
+        fetch("{% url 'frontend:customer_login' %}", {
+            method: "POST",
+            headers: { 
+                "X-CSRFToken": getCookie('csrftoken'),
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Login';
+            
+            if(data.success) {
+                showToast(data.message || 'Login successful!', 'success');
+                const modalEl = document.getElementById('accountModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if(modal) modal.hide();
+                setTimeout(() => { window.location.reload(); }, 1500);
+            } else {
+                if(errorMsg) {
+                    errorMsg.textContent = data.message || 'Login failed.';
+                    errorMsg.style.display = 'block';
+                }
+                showToast(data.message || 'Login failed.', 'error');
+            }
+        })
+        .catch((err) => {
+            console.error('Login error:', err);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Login';
+            if(errorMsg) {
+                errorMsg.textContent = 'An error occurred. Please try again.';
+                errorMsg.style.display = 'block';
+            }
+            showToast('An error occurred. Please try again.', 'error');
+        });
+    }
+
+    // 9. Register Handler
+    function handleFrontendRegister(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const errorMsg = document.getElementById('register-error');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if(errorMsg) errorMsg.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Creating...';
+
+        fetch("{% url 'frontend:customer_register' %}", {
+            method: "POST",
+            headers: { 
+                "X-CSRFToken": getCookie('csrftoken'),
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        })
+        .then(async (res) => {
+            const data = await res.json().catch(() => ({ success: false, message: 'Server returned invalid response.' }));
+            return { status: res.status, data: data };
+        })
+        .then(({ status, data }) => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Register';
+            
+            if (status === 200 && data.success) {
+                showToast(data.message || 'Account created successfully!', 'success');
+                const modalEl = document.getElementById('accountModal');
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.hide();
+                setTimeout(() => { window.location.reload(); }, 1500);
+            } else {
+                const errMsg = data.message || `Registration failed (Error ${status})`;
+                if(errorMsg) {
+                    errorMsg.textContent = errMsg;
+                    errorMsg.style.display = 'block';
+                }
+                showToast(errMsg, 'error');
+            }
+        })
+        .catch((err) => {
+            console.error('Full Register Error:', err);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Register';
+            const errMsg = 'Network error. Please check your internet or try again.';
+            if(errorMsg) {
+                errorMsg.textContent = errMsg;
+                errorMsg.style.display = 'block';
+            }
+            showToast(errMsg, 'error');
+        });
+    }
+   
+    // 10. Reset Modal Forms when opened
+    const accountModal = document.getElementById('accountModal');
+    if (accountModal) {
+        accountModal.addEventListener('show.bs.modal', function () {
+            document.getElementById('loginForm').classList.remove('d-none');
+            document.getElementById('registerForm').classList.add('d-none');
+            document.getElementById('accountModalLabel').textContent = 'Welcome Back';
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('register-error').style.display = 'none';
+        });
+    }
+
+});
+</script>

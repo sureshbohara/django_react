@@ -1,0 +1,100 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th width="70">Image</th>
+                    <th>Customer</th>
+                    <th width="110">Rating</th>
+                    <th>Review</th>
+                    <th width="100">Display On</th>
+                    <th width="70">Order</th>
+                    <th width="90">Status</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                <tr>
+                    <td>
+                        {% if item.has_image %}
+                            <img src="{{ item.image_url }}" width="55" height="45"
+                                 style="object-fit: cover; border-radius: 4px;">
+                        {% else %}
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                 style="width: 55px; height: 45px;">
+                                <i class="bi bi-person-circle text-secondary fs-4"></i>
+                            </div>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                        {% if item.email %}
+                            <br><small class="text-muted">{{ item.email }}</small>
+                        {% endif %}
+                        {% if item.address %}
+                            <br><small class="text-secondary"><i class="bi bi-geo-alt"></i> {{ item.address }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="text-warning fs-6" style="letter-spacing: 2px;">{{ item.star_rating }}</span>
+                        <br><small class="text-muted">{{ item.rating }} / 5</small>
+                    </td>
+
+                    <td>
+                        <small>{{ item.review|truncatechars:60 }}</small>
+                        {% if item.content %}
+                            <br><small class="text-muted">{{ item.content|truncatechars:30 }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="badge bg-info text-dark">{{ item.display_on|capfirst }}</span>
+                    </td>
+
+                    <td>
+                        <input type="number" name="order_level" value="{{ item.order_level }}"
+                               data-id="{{ item.id }}" data-original="{{ item.order_level }}"
+                               class="form-control form-control-sm order-level-input" style="width: 60px;">
+                    </td>
+
+                    <td>
+                        <form class="status-form" data-id="{{ item.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ item.id }}">
+                            <input type="checkbox" {% if item.status %}checked{% endif %}
+                                   data-toggle="toggle" data-onstyle="success"
+                                   data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'reviews:review_update' item.id %}"
+                               class="btn btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{% url 'reviews:review_delete' item.id %}"
+                                  method="POST" id="deleteForm{{ item.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger"
+                                        onclick="confirmDelete(event, 'deleteForm{{ item.id }}')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No reviews found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+     {% include 'layouts/includes/pagination.html' %}
+</div>

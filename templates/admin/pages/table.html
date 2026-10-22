@@ -1,0 +1,67 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Title</th>
+                    <th>Slug</th>
+                    <th width="150">Display</th>
+                    <th width="80">Order</th>
+                    <th width="100">Status</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in page_obj %}
+                <tr>
+                    <td>
+                        {% if item.icon %}<i class="{{ item.icon }} me-1 text-primary"></i>{% endif %}
+                        <strong>{{ item.title }}</strong>
+                    </td>
+                    <td><code class="text-muted">/{{ item.slug }}</code></td>
+                    <td>
+                        {% if item.show_in_menu %}<span class="badge bg-primary me-1">Menu</span>{% endif %}
+                        {% if item.show_in_footer %}<span class="badge bg-secondary me-1">Footer</span>{% endif %}
+                        {% if item.is_featured %}<span class="badge bg-warning text-dark">⭐ Featured</span>{% endif %}
+                        {% if not item.show_in_menu and not item.show_in_footer and not item.is_featured %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <input type="number" name="order_level" value="{{ item.order_level }}" 
+                               data-id="{{ item.id }}" data-original="{{ item.order_level }}" 
+                               class="form-control form-control-sm order-level-input" style="width: 60px;">
+                    </td>
+                    <td>
+                        <form class="status-form" data-id="{{ item.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ item.id }}">
+                            <input type="checkbox" {% if item.status %}checked{% endif %} 
+                                   data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'pages:page_update' item.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{% url 'pages:page_delete' item.id %}" method="POST" 
+                                  id="deleteForm{{ item.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete(event, 'deleteForm{{ item.id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4 text-muted">No pages found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+     {% include 'layouts/includes/pagination.html' %}
+</div>

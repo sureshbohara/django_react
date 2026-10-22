@@ -1,0 +1,40 @@
+<div class="col-12">
+    <form id="filterForm" method="GET" class="row g-3 mb-3">
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control form-control-sm" 
+                   placeholder="🔍 Search by title..." 
+                   value="{{ filters.search|default:'' }}">
+        </div>
+        <div class="col-md-2">
+            <select name="show_in_menu" class="form-select form-select-sm">
+                <option value="">All Menu</option>
+                <option value="1" {% if filters.show_in_menu == '1' %}selected{% endif %}>✅ In Menu</option>
+                <option value="0" {% if filters.show_in_menu == '0' %}selected{% endif %}>❌ Not in Menu</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="show_in_footer" class="form-select form-select-sm">
+                <option value="">All Footer</option>
+                <option value="1" {% if filters.show_in_footer == '1' %}selected{% endif %}>✅ In Footer</option>
+                <option value="0" {% if filters.show_in_footer == '0' %}selected{% endif %}>❌ Not in Footer</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="is_featured" class="form-select form-select-sm">
+                <option value="">All Featured</option>
+                <option value="1" {% if filters.is_featured == '1' %}selected{% endif %}>⭐ Featured</option>
+                <option value="0" {% if filters.is_featured == '0' %}selected{% endif %}>❌ Not Featured</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Status</option>
+                <option value="1" {% if filters.status == '1' %}selected{% endif %}>✅ Active</option>
+                <option value="0" {% if filters.status == '0' %}selected{% endif %}>❌ Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-1 d-flex gap-2">
+            <a href="{% url 'pages:page_list' %}" class="btn btn-primary btn-sm text-white">✕</a>
+        </div>
+    </form>
+</div>

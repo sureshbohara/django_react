@@ -1,0 +1,71 @@
+.passwordShow{
+    position: absolute;
+    right: 30px;
+    transform: translate(0,-50%);
+    cursor: pointer;
+    margin-top: -18px;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #4f8f4f!important;
+    border-color: #4f8f4f!important;
+}
+.btn-primary:hover{
+    color: #fff;
+    background-color: #4f8f4f!important;
+    border-color: #4f8f4f!important;
+}
+
+
+a {
+    color: #4f8f4f!important;
+}
+a:hover{
+    color: #dc3545!important;
+}
+.card-header{
+    border-radius: none!important;
+}
+.btn-custom{
+   border: 1px solid #4f8f4f;
+}
+
+
+label {
+    margin-bottom: 5px;
+    font-weight: 400;
+    font-size: 15px;
+}
+
+
+.btn-danger:hover{
+    color: #fff!important;
+}
+.btn-default{
+    border: 1px solid #dc3545;
+    color: #dc3545!important;
+    background-color: #f7f8fa!important;
+}
+
+
+.parent-icon .bi,
+.mm-collapse li a .bi {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #e2e3e5;
+  background-color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.parent-icon .bi:hover,
+.mm-collapse li a .bi:hover {
+  background-color: #f7f8fa; 
+}
+
+ 

@@ -1,0 +1,107 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}{% if item %}Edit{% else %}Create{% endif %} Attribute{% endblock %}
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:attribute_list' %}">Attributes</a></li>
+            <li class="breadcrumb-item active">{% if item %}Edit{% else %}Create{% endif %}</li>
+        </ol>
+    </nav>
+</div>
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"> {% if item %}Edit{% else %}Create{% endif %} Attribute</h6>
+        <a href="{% url 'products:attribute_list' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+    <div class="card-body bg-light p-3">
+        <form id="attributeForm" method="POST" action="{% if item %}{% url 'products:attribute_update' item.id %}{% else %}{% url 'products:attribute_create' %}{% endif %}">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Attribute Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">{{ form.name }}</div>
+                                <div class="col-md-6">{{ form.slug }}</div>
+                                <div class="col-md-6">{{ form.type }}</div>
+                                <div class="col-md-6">{{ form.order_level }}</div>
+                                
+                                <div class="col-12 mt-3 pt-3 border-top">
+                                    <h6 class="mb-3">Attribute Values</h6>
+                                    <div class="valuesDisplay">
+                                        {% if item and item.values %}
+                                            {% for val in item.values %}
+                                                <div class="row mb-2 valueItem">
+                                                    <div class="col-10"><input type="text" name="values[]" class="form-control" value="{{ val }}" placeholder="Value"></div>
+                                                    <div class="col-2"><button type="button" class="btn btn-danger btn-sm removeValue"><i class="bi bi-trash"></i></button></div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" class="btn btn-secondary btn-sm addValue"><i class="bi bi-plus-circle"></i> Add Value</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Settings</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        {{ form.status }}
+                                        <label class="form-check-label" for="{{ form.status.id_for_label }}">Active</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn"><i class="bi bi-save me-2"></i> {% if item %}Update{% else %}Create{% endif %}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    $('.addValue').on('click', function() {
+        $('.valuesDisplay').append(`<div class="row mb-2 valueItem"><div class="col-10"><input type="text" name="values[]" class="form-control" placeholder="Value"></div><div class="col-2"><button type="button" class="btn btn-danger btn-sm removeValue"><i class="bi bi-trash"></i></button></div></div>`);
+    });
+    $(document).on('click', '.removeValue', function() { $(this).closest('.valueItem').remove(); });
+
+    $('#attributeForm').on('submit', function(e) {
+        e.preventDefault();
+        $('.text-danger').remove(); $('.is-invalid').removeClass('is-invalid');
+        const formData = new FormData(this);
+        const submitBtn = $('#submitBtn');
+        const originalBtnText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Processing...');
+
+        $.ajax({
+            type: 'POST', url: $(this).attr('action'), data: formData, contentType: false, processData: false,
+            headers: {'X-CSRFToken': $('meta[name="csrf-token"]').attr('content')},
+            success: function(res) {
+                if (res.success) { toastr.success(res.message); setTimeout(() => window.location.href = '{% url "products:attribute_list" %}', 1500); }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html(originalBtnText);
+                if (xhr.responseJSON?.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        $(`[name="${field}"]`).addClass('is-invalid').after(`<div class="invalid-feedback d-block">${err[0]}</div>`);
+                    });
+                    toastr.error('Please fix the form errors');
+                } else { toastr.error('Something went wrong'); }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% block title %}Manage Customers{% endblock %}
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Customers</li>
+        </ol>
+    </nav>
+</div>
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0">👥 Customers</h6>
+        <div>
+            <a href="{% url 'customers:send_email' %}" class="btn btn-warning btn-sm me-2"><i class="bi bi-envelope"></i> Send Email</a>
+            <a href="{% url 'customers:customer_create' %}" class="btn btn-light btn-sm"><i class="bi bi-plus-lg"></i> Create New</a>
+        </div>
+    </div>
+    <div class="card-body bg-light p-3">
+        <div class="row mb-3">{% include 'admin/customers/search.html' %}</div>
+        <div class="row">{% include 'admin/customers/table.html' %}</div>
+    </div>
+</div>
+{% endblock %}

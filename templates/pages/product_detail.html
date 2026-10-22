@@ -1,0 +1,368 @@
+{% extends 'layouts/frontend/base.html' %}
+{% load static %}
+
+{% block meta_title %}{{ product.meta_title|default:product.name }} - {{ site_settings.system_name|default:"E-Shop" }}{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.short_description }}{% endblock %}
+{% block meta_keywords %}{{ product.meta_keywords|default:site_settings.meta_keywords }}{% endblock %}
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'front/product_detail.css' %}">
+
+<!-- 1. Breadcrumb -->
+<section class="hero-breadcrumb">
+  <div class="container">
+    <nav class="breadcrumb-nav" aria-label="breadcrumb">
+      <ul class="breadcrumb-list">
+        <li><a href="{% url 'frontend:home' %}">Home</a> <span class="breadcrumb-separator">/</span></li>
+        {% if product.category %}
+        <li><a href="{% url 'frontend:shop' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> <span class="breadcrumb-separator">/</span></li>
+        {% endif %}
+        <li class="active" aria-current="page">{{ product.name }}</li>
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<!-- 2. Product Detail Main -->
+<section class="product-detail-evara">
+  <div class="container">
+    <div class="row g-4 g-lg-5">
+      
+      <!-- Left: Images -->
+      <div class="col-lg-6">
+        <div class="product-images">
+          <div class="main-image-wrapper">
+            {% if product.is_on_sale %}<span class="badge-sale">SALE</span>{% endif %}
+            <img id="main-product-image" src="{{ product.thumbnail_url }}" alt="{{ product.name }}" loading="lazy" />
+          </div>
+          <div class="thumbnail-gallery">
+            <button class="thumb-btn active" onclick="changeImage(this, '{{ product.thumbnail_url }}')">
+              <img src="{{ product.thumbnail_url }}" alt="Main" />
+            </button>
+            {% if product.gallery %}
+              {% for img in product.gallery|slice:":4" %}
+              <button class="thumb-btn" onclick="changeImage(this, '{{ img }}')">
+                <img src="{{ img }}" alt="Gallery {{ forloop.counter }}" />
+              </button>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Info -->
+      <div class="col-lg-6">
+        <div class="product-info-sticky">
+          {% if product.brand %}
+          <span class="product-brand-badge">{{ product.brand.name }}</span>
+          {% endif %}
+          
+          <h1 class="product-title">{{ product.name }}</h1>
+          
+          <div class="product-rating-wrapper">
+            <div class="rating"><span class="stars">★★★★★</span> <span class="rating-count">4.8</span></div>
+            <span class="rating-divider">|</span>
+            <a href="#reviews" class="review-link" onclick="switchTab('reviews')">Reviews</a>
+            <span class="rating-divider">|</span>
+            <span class="sold-count">{{ product.view_count }} Views</span>
+          </div>
+
+          <div class="product-price-wrapper">
+            <div class="price-box">
+              <span class="current-price" id="current-price">Rs. {{ product.final_price }}</span>
+              {% if product.is_on_sale %}
+              <span class="old-price" id="old-price">Rs. {{ product.regular_price }}</span>
+              <span class="savings-badge" id="savings-badge">Save Rs. {{ product.regular_price|add:"-"|add:product.final_price }}</span>
+              {% endif %}
+            </div>
+            {% if product.is_on_sale %}
+            <div class="discount-badge" id="discount-badge">
+              {% widthratio product.regular_price|add:"-"|add:product.final_price product.regular_price 100 %}% OFF
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="product-short-desc">
+            <p>{{ product.short_description|default:product.description|truncatechars_html:200|safe }}</p>
+          </div>
+
+          <!-- Meta Info -->
+          <div class="product-meta-info">
+            <div class="meta-row">
+              <span class="meta-label">Availability:</span>
+              <span class="meta-value {% if product.stock_status == 'in_stock' %}in-stock{% else %}text-danger{% endif %}" id="stock-status">
+                {% if product.stock_status == 'in_stock' %}In Stock ({{ product.stock_quantity }}){% else %}Out of Stock{% endif %}
+              </span>
+            </div>
+            {% if product.sku %}
+            <div class="meta-row">
+              <span class="meta-label">SKU:</span>
+              <span class="meta-value" id="sku-value">{{ product.sku }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Variants -->
+          <div class="product-attribute">
+            <label class="attribute-label">Select Option:</label>
+            <div class="size-options-variants">
+              {% for variant in product.variants.all %}
+              <button class="size-variant-btn {% if forloop.first %}active{% endif %}" 
+                      data-variant-id="{{ variant.id }}"
+                      data-price="{{ variant.sale_price|default:variant.price }}" 
+                      data-old-price="{{ variant.price }}" 
+                      data-sku="{{ variant.sku|default:product.sku }}"
+                      data-stock="{{ variant.stock_quantity }}"
+                      onclick="selectVariant(this)">
+                <div class="variant-info">
+                  <span class="variant-name">
+                    {% if variant.attributes %}
+                      {% for key, value in variant.attributes.items %}
+                        <span class="variant-tag">{{ key }}: {{ value }}</span>
+                      {% endfor %}
+                    {% else %}Standard{% endif %}
+                  </span>
+                  <span class="variant-stock">{{ variant.stock_quantity }} left</span>
+                </div>
+                <span class="variant-price">Rs. {{ variant.sale_price|default:variant.price }}</span>
+              </button>
+              {% empty %}
+              <button class="size-variant-btn active" data-variant-id="" data-price="{{ product.final_price }}" data-old-price="{{ product.regular_price }}" data-sku="{{ product.sku }}" data-stock="{{ product.stock_quantity }}" onclick="selectVariant(this)">
+                <div class="variant-info"><span class="variant-name">Standard</span><span class="variant-stock">{{ product.stock_quantity }} left</span></div>
+                <span class="variant-price">Rs. {{ product.final_price }}</span>
+              </button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Actions (Desktop) -->
+          <div class="product-actions-wrapper desktop-actions">
+            <div class="quantity-selector">
+              <span class="quantity-label">Qty:</span>
+              <div class="quantity-control">
+                <button class="qty-btn" type="button" onclick="updateQty(-1)">−</button>
+                <input type="number" id="qty-input" value="1" min="1" max="{{ product.stock_quantity }}" readonly>
+                <button class="qty-btn" type="button" onclick="updateQty(1)">+</button>
+              </div>
+            </div>
+            <button class="btn-add-cart add_to_cart" data-product-id="{{ product.id }}">
+              <span class="btn-icon">🛒</span>
+              <span class="btn-text">Add to Cart</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Tabs Section -->
+    <div class="product-tabs-evara">
+      <div class="tabs-nav">
+        <button class="tab-nav active" data-tab="description">Description</button>
+        <button class="tab-nav" data-tab="specifications">Specifications</button>
+        {% if product.faqs %}<button class="tab-nav" data-tab="faqs">FAQs</button>{% endif %}
+        <button class="tab-nav" data-tab="reviews">Reviews</button>
+      </div>
+
+      <div class="tabs-content-wrapper">
+        <div id="description" class="tab-content active">
+          <div class="tab-content-inner">
+            {{ product.description|safe|default:"<p class='text-muted'>No detailed description available.</p>" }}
+          </div>
+        </div>
+
+        <div id="specifications" class="tab-content">
+          <div class="tab-content-inner">
+            <table class="additional-info-table">
+              {% if product.brand %}<tr><th>Brand</th><td>{{ product.brand.name }}</td></tr>{% endif %}
+              <tr><th>SKU</th><td>{{ product.sku|default:"N/A" }}</td></tr>
+              <tr><th>Type</th><td>{{ product.get_product_type_display }}</td></tr>
+              <tr><th>Stock</th><td>{{ product.get_stock_status_display }}</td></tr>
+              {% if product.category %}<tr><th>Category</th><td>{{ product.category.name }}</td></tr>{% endif %}
+            </table>
+          </div>
+        </div>
+
+        {% if product.faqs %}
+        <div id="faqs" class="tab-content">
+          <div class="tab-content-inner">
+            <div class="accordion" id="productFaqAccordion">
+              {% for faq in product.faqs %}
+              <div class="accordion-item mb-2">
+                <h2 class="accordion-header">
+                  <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}">
+                    {{ faq.question }}
+                  </button>
+                </h2>
+                <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#productFaqAccordion">
+                  <div class="accordion-body">{{ faq.answer|safe }}</div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div id="reviews" class="tab-content">
+          <div class="tab-content-inner">
+            <div class="reviews-header">
+              <div class="overall-rating">
+                <span class="rating-number">4.8</span>
+                <div><div class="rating-stars mb-1">★★★★★</div><span class="total-reviews">Based on customer feedback</span></div>
+              </div>
+              <button class="btn-write-review" onclick="showReviewForm()">Write a Review</button>
+            </div>
+            <div id="review-form-container" style="display: none; margin-top: 20px; padding: 24px; background: var(--bg-soft); border-radius: var(--radius);">
+              <h4 class="mb-3">Write Your Review</h4>
+              <form id="review-form">
+                <div class="mb-3">
+                  <label class="form-label">Your Rating</label>
+                  <div class="star-rating">
+                    <input type="radio" name="rating" value="5" id="star5"><label for="star5">★</label>
+                    <input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+                    <input type="radio" name="rating" value="3" id="star3"><label for="star3">★</label>
+                    <input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+                    <input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Your Review</label>
+                  <textarea class="form-control" rows="4" placeholder="Share your experience..."></textarea>
+                </div>
+                <button type="button" class="btn-submit-review" onclick="submitReview()">Submit Review</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mobile Sticky Cart -->
+<div class="mobile-sticky-cart d-lg-none">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <div class="flex-grow-1">
+        <div class="mobile-cart-price">Rs. <span id="mobile-current-price">{{ product.final_price }}</span></div>
+      </div>
+      <button class="btn-add-cart-mobile add_to_cart" data-product-id="{{ product.id }}">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+{% if related_products %}
+<section class="product_section section">
+  <div class="container">
+    <h3 class="text-center mb-4" style="font-family: 'Playfair Display', serif; color: var(--theme-color);">You May Also Like</h3>
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+      {% for r_product in related_products %}
+      <div class="col">
+        <div class="product-card h-100">
+          <div class="img-wrapper">
+            <a href="{% url 'frontend:product_detail' r_product.slug %}"><img src="{{ r_product.thumbnail_url }}" alt="{{ r_product.name }}"></a>
+          </div>
+          <div class="p-3">
+            <h6 class="mb-2 text-truncate"><a href="{% url 'frontend:product_detail' r_product.slug %}" class="text-decoration-none text-dark">{{ r_product.name }}</a></h6>
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="fw-bold" style="color: var(--theme-color);">Rs. {{ r_product.final_price }}</span>
+              {% if r_product.is_on_sale %}<small class="text-muted text-decoration-line-through">Rs. {{ r_product.regular_price }}</small>{% endif %}
+            </div>
+            <button class="btn btn-sm btn-outline-primary w-100 add_to_cart" data-product-id="{{ r_product.id }}"><i class="bi bi-bag-plus"></i> Add</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<script>
+function changeImage(btn, src) {
+  document.getElementById('main-product-image').src = src;
+  document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectVariant(btn) {
+  // Remove active class from all buttons
+  document.querySelectorAll('.size-variant-btn').forEach(b => b.classList.remove('active'));
+  // Add active class to clicked button
+  btn.classList.add('active');
+  
+  // Get data from button
+  const price = parseFloat(btn.dataset.price);
+  const oldPrice = parseFloat(btn.dataset.oldPrice);
+  const sku = btn.dataset.sku;
+  const stock = parseInt(btn.dataset.stock);
+  
+  // Update price display
+  const formattedPrice = 'Rs. ' + price.toFixed(2);
+  document.getElementById('current-price').textContent = formattedPrice;
+  document.getElementById('mobile-current-price').textContent = price.toFixed(2);
+  
+  // Show/hide old price and discount
+  if (oldPrice && oldPrice > price) {
+    document.getElementById('old-price').textContent = 'Rs. ' + oldPrice.toFixed(2);
+    document.getElementById('old-price').style.display = 'inline';
+    document.getElementById('savings-badge').textContent = 'Save Rs. ' + (oldPrice - price).toFixed(2);
+    document.getElementById('savings-badge').style.display = 'inline-block';
+    document.getElementById('discount-badge').textContent = Math.round(((oldPrice - price) / oldPrice) * 100) + '% OFF';
+    document.getElementById('discount-badge').style.display = 'block';
+  } else {
+    document.getElementById('old-price').style.display = 'none';
+    document.getElementById('savings-badge').style.display = 'none';
+    document.getElementById('discount-badge').style.display = 'none';
+  }
+  
+  // Update SKU and stock
+  document.getElementById('sku-value').textContent = sku || 'N/A';
+  const stockEl = document.getElementById('stock-status');
+  if (stock > 0) {
+    stockEl.textContent = 'In Stock (' + stock + ')';
+    stockEl.className = 'meta-value in-stock';
+  } else {
+    stockEl.textContent = 'Out of Stock';
+    stockEl.className = 'meta-value text-danger';
+  }
+}
+
+function updateQty(change) {
+  const input = document.getElementById('qty-input');
+  let val = parseInt(input.value) + change;
+  const max = parseInt(input.max) || 99;
+  if (val < 1) val = 1;
+  if (val > max) val = max;
+  input.value = val;
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-nav').forEach(t => {
+    t.classList.remove('active');
+    if(t.dataset.tab === tabId) t.classList.add('active');
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.remove('active');
+    if(c.id === tabId) c.classList.add('active');
+  });
+}
+
+document.querySelectorAll('.tab-nav').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+function showReviewForm() {
+  const form = document.getElementById('review-form-container');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'block') form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function submitReview() {
+  alert('Review submitted successfully!');
+  document.getElementById('review-form-container').style.display = 'none';
+  document.getElementById('review-form').reset();
+}
+</script>
+{% endblock %}

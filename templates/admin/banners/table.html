@@ -1,0 +1,47 @@
+<div class="col-12">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th width="100">Image</th>
+                    <th>Title</th>
+                    <th width="80">Order</th>
+                    <th width="100">Status</th>
+                    <th width="120">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for banner in page_obj %}
+                <tr>
+                    <td><img src="{{ banner.image_url }}" width="80" height="50" style="object-fit: cover; border-radius: 4px;"></td>
+                    <td><strong>{{ banner.title }}</strong></td>
+                    <td>
+                        <input type="number" name="order_level" value="{{ banner.order_level }}" data-id="{{ banner.id }}" data-original="{{ banner.order_level }}" class="form-control form-control-sm order-level-input" style="width: 60px;">
+                    </td>
+                    <td>
+                        <form class="status-form" data-id="{{ banner.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="status_id" value="{{ banner.id }}">
+                            <input type="checkbox" {% if banner.status %}checked{% endif %} data-toggle="toggle" data-onstyle="success" data-offstyle="danger" data-size="sm">
+                        </form>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'banners:banner_update' banner.id %}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form action="{% url 'banners:banner_delete' banner.id %}" method="POST" id="deleteForm{{ banner.id }}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-outline-danger" onclick="confirmDelete(event, 'deleteForm{{ banner.id }}')"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-muted">No banners found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'layouts/includes/pagination.html' %}
+     
+</div>

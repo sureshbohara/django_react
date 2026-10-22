@@ -1,0 +1,30 @@
+<div class="col-12">
+    <form id="filterForm" method="GET" class="row g-3 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control form-control-sm" 
+                   placeholder="🔍 Search by question..." 
+                   value="{{ filters.search|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <select name="display_on" class="form-select form-select-sm">
+                <option value="">All Pages</option>
+                <option value="default" {% if filters.display_on == 'default' %}selected{% endif %}>Default</option>
+                <option value="home" {% if filters.display_on == 'home' %}selected{% endif %}>Home</option>
+                <option value="about" {% if filters.display_on == 'about' %}selected{% endif %}>About</option>
+                <option value="contact" {% if filters.display_on == 'contact' %}selected{% endif %}>Contact</option>
+                <option value="services" {% if filters.display_on == 'services' %}selected{% endif %}>Services</option>
+                <option value="booking" {% if filters.display_on == 'booking' %}selected{% endif %}>Booking</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">All Status</option>
+                <option value="1" {% if filters.status == '1' %}selected{% endif %}>✅ Active</option>
+                <option value="0" {% if filters.status == '0' %}selected{% endif %}>❌ Inactive</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <a href="{% url 'faqs:faq_list' %}" class="btn btn-primary btn-sm text-white">✕ Reset</a>
+        </div>
+    </form>
+</div>

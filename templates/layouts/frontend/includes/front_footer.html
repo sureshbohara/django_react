@@ -1,0 +1,140 @@
+{% load static %}
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-newsletter">
+    <div class="container">
+      <h3>Join Our Fragrance Community</h3>
+      <p>Subscribe to get special offers, free giveaways, and exclusive deals.</p>
+      <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
+        <input type="email" placeholder="Enter your email address" required>
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
+  <div class="footer-main">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-3 col-md-6 footer-widget">
+          <h4>About Us</h4>
+          <p style="opacity: 0.8; line-height: 1.8;">{{ site_settings.info4|default:"Every product is made in small batches by hand, using only premium organic oils and botanicals." }}</p>
+          <div class="footer-social">
+            {% if site_settings.facebook %}<a href="{{ site_settings.facebook }}" aria-label="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>{% endif %}
+            {% if site_settings.instagram %}<a href="{{ site_settings.instagram }}" aria-label="Instagram" target="_blank"><i class="bi bi-instagram"></i></a>{% endif %}
+            {% if site_settings.youtube %}<a href="{{ site_settings.youtube }}" aria-label="YouTube" target="_blank"><i class="bi bi-youtube"></i></a>{% endif %}
+            {% if site_settings.twitter %}<a href="{{ site_settings.twitter }}" aria-label="Twitter" target="_blank"><i class="bi bi-twitter"></i></a>{% endif %}
+          </div>
+        </div>
+        <div class="col-lg-3 col-6 footer-widget">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            {% if global_pages %}
+              {% for page in global_pages %}
+                <li><a href="">{{ page.title }}</a></li>
+              {% endfor %}
+            {% else %}
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Shipping Info</a></li>
+              <li><a href="#">Return Policy</a></li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="col-lg-3 col-6 footer-widget">
+          <h4>Categories</h4>
+          <ul class="footer-links">
+            {% if global_categories %}
+              {% for category in global_categories %}
+                <li><a href="{% url 'frontend:shop' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+              {% endfor %}
+            {% else %}
+              <li><a href="{% url 'frontend:shop' %}">All Products</a></li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="col-lg-3 col-12 footer-widget">
+          <h4>Contact Us</h4>
+          <ul class="contact-info-list">
+            <li><i class="bi bi-telephone-fill"></i> <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone|default:"+977 9709065971" }}</a></li>
+            <li><i class="bi bi-envelope-fill"></i> <a href="mailto:{{ site_settings.email }}">{{ site_settings.email|default:"support@carolineshouse.com" }}</a></li>
+            <li><i class="bi bi-geo-alt-fill"></i> <span>{{ site_settings.address|default:"Kathmandu, Nepal" }}</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <div class="footer-bottom-inner">
+        <p class="copyright">{{ site_settings.footer_copyright|default:"© 2026 Caroline's House of Fragrances. All rights reserved." }}</p>
+        <div class="payment-icons">
+          <i class="bi bi-credit-card-2-front-fill" title="Credit Card"></i>
+          <i class="bi bi-cash-coin" title="Cash on Delivery"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MOBILE BOTTOM MENU -->
+<div class="mobile-menu">
+  <a href="{% url 'frontend:home' %}" class="active">
+    <i class="bi bi-house-door-fill"></i>
+    <span>Home</span>
+  </a>
+  <a href="{% url 'frontend:shop' %}">
+    <i class="bi bi-grid-fill"></i>
+    <span>Shop</span>
+  </a>
+  <a href="">
+    <i class="bi bi-bag-fill"></i>
+    <span>Cart</span>
+  </a>
+  <a href="#" data-bs-toggle="modal" data-bs-target="#accountModal">
+    <i class="bi bi-person-fill"></i>
+    <span>Profile</span>
+  </a>
+</div>
+
+<!-- Scroll to Top -->
+<button id="scrollTopBtn" title="Go to top" aria-label="Scroll to top"><i class="bi bi-arrow-up"></i></button>
+
+
+
+<!-- OFFCANVAS MENU -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNav" aria-labelledby="offcanvasNavLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasNavLabel">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <nav class="nav flex-column">
+      <a class="nav-link" href="{% url 'frontend:home' %}"><i class="bi bi-house me-2"></i> Home</a>
+      <a class="nav-link" href="{% url 'frontend:shop' %}?sort=newest"><i class="bi bi-fire me-2"></i> Best Sellers</a>
+      <a class="nav-link" href="#"><i class="bi bi-truck me-2"></i> Track Order</a>
+    </nav>
+    <div class="accordion" id="ecomAccordion">
+      {% for category in categories %}
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cat{{ forloop.counter }}">
+            <i class="bi bi-droplet-fill me-2"></i> {{ category.name }}
+          </button>
+        </h2>
+        <div id="cat{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#ecomAccordion">
+          <div class="accordion-body p-0">
+            <ul class="list-unstyled m-0">
+              {% for child in category.children.all %}
+                <li><a href="{% url 'frontend:shop' %}?category={{ child.slug }}">{{ child.name }}</a></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="offcanvas-footer p-3">
+    <p class="mb-2"><i class="bi bi-telephone-fill me-2"></i> <a href="tel:{{ site_settings.phone }}">{{ site_settings.phone }}</a></p>
+    <p class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i> {{ site_settings.address }}</p>
+  </div>
+</div>

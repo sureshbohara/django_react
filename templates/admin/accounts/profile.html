@@ -1,0 +1,129 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 p-0">
+            <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}" class="text-decoration-none text-secondary">Dashboard</a></li>
+            <li class="breadcrumb-item active">Profile</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-custom text-white d-flex align-items-center justify-content-between py-2">
+        <h6 class="mb-0"><i class="bi bi-person-circle me-2"></i>Update Your Profile</h6>
+        <a href="{% url 'core:dashboard' %}" class="btn btn-light btn-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    </div>
+
+    <div class="card-body bg-light p-3">
+        <form id="updateProfileForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Personal Information</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Full Name</label>
+                                    {{ form.name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email Address</label>
+                                    {{ form.email }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mobile Number</label>
+                                    {{ form.mobile }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address</label>
+                                    {{ form.address }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Details / Bio</label>
+                                    {{ form.details }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3 border-bottom pb-2">Profile Settings</h5>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Gender</label>
+                                    {{ form.gender }}
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Profile Image</label>
+                                    {{ form.image }}
+                                    <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i>PNG, JPG or WEBP. Max 2MB.</small>
+                                </div>
+                                <div class="col-12 text-center">
+                                    <img src="{{ admin.image_url }}" alt="Profile" id="profileImagePreview" class="img-fluid rounded border" style="max-height: 150px;">
+                                </div>
+                                <div class="col-12 mt-4 pt-2 border-top">
+                                    <button type="submit" id="profileSubmitBtn" class="btn btn-primary w-100 py-2">
+                                        <i class="bi bi-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Image Preview Logic
+    $('#profileImageInput').on('change', function() {
+        if (this.files && this.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function(e) { $('#profileImagePreview').attr('src', e.target.result); }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // AJAX Submit Logic
+    $('#updateProfileForm').on('submit', function(e) {
+        e.preventDefault();
+        let form = $(this), submitBtn = $('#profileSubmitBtn');
+        form.find('.text-danger').remove();
+        form.find('.is-invalid').removeClass('is-invalid');
+        submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i>Updating...');
+
+        $.ajax({
+            url: "{% url 'accounts:profile_update' %}",
+            type: 'POST',
+            data: new FormData(this),
+            processData: false, contentType: false,
+            success: function(res) {
+                if(res.success) {
+                    toastr.success(res.message);
+                    submitBtn.prop('disabled', false).html('<i class="bi bi-save me-2"></i>Save Changes');
+                }
+            },
+            error: function(xhr) {
+                submitBtn.prop('disabled', false).html('<i class="bi bi-save me-2"></i>Save Changes');
+                if(xhr.status === 422 && xhr.responseJSON.errors) {
+                    $.each(xhr.responseJSON.errors, function(field, err) {
+                        $(`[name="${field}"]`).addClass('is-invalid').after(`<span class="text-danger small d-block">${err[0]}</span>`);
+                    });
+                } else { toastr.error('Something went wrong.'); }
+            }
+        });
+    });
+</script>
+{% endblock %}

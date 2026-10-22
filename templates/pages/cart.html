@@ -1,0 +1,222 @@
+{% extends 'layouts/frontend/base.html' %}
+{% load static %}
+
+{% block meta_title %}Shopping Cart - {{ site_settings.system_name }}{% endblock %}
+{% block meta_description %}Review your shopping cart and proceed to checkout.{% endblock %}
+
+{% block content %}
+<section class="cart-page">
+  <div class="container">
+    
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav mb-4" aria-label="breadcrumb">
+      <ul class="breadcrumb-list">
+        <li><a href="{% url 'frontend:home' %}">Home</a> <span class="breadcrumb-separator">/</span></li>
+        <li class="active" aria-current="page">Shopping Cart</li>
+      </ul>
+    </nav>
+
+    <h2 class="cart-page-title">Your Shopping Cart</h2>
+
+    {% if cart_items %}
+    <div class="row g-4">
+      
+      <!-- Cart Items List -->
+      <div class="col-lg-8">
+        <div class="cart-items-card">
+          {% for item in cart_items %}
+          <div class="cart-item" data-cart-key="{{ item.cart_key }}">
+            <a href="{% url 'frontend:product_detail' item.product.slug %}">
+              <img src="{{ item.product.thumbnail_url }}" alt="{{ item.product.name }}" class="cart-item-image">
+            </a>
+            
+            <div class="cart-item-details">
+              <h6 class="cart-item-name">
+                <a href="{% url 'frontend:product_detail' item.product.slug %}">{{ item.product.name }}</a>
+              </h6>
+              
+               {% if item.variant_name != "Standard" %}
+                <div class="cart-item-variant" style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+                  <i class="bi bi-tag"></i> {{ item.variant_name }}
+                </div>
+                {% endif %}
+              
+              <div class="cart-item-unit-price">Rs. {{ item.item_price }} each</div>
+              
+              <div class="cart-qty-controls">
+                <button class="cart-qty-btn" onclick="updateCartItem('{{ item.cart_key }}', {{ item.qty }} - 1)">−</button>
+                <span class="cart-qty-value">{{ item.qty }}</span>
+                <button class="cart-qty-btn" onclick="updateCartItem('{{ item.cart_key }}', {{ item.qty }} + 1)">+</button>
+              </div>
+            </div>
+            
+            <div class="cart-item-right">
+              <div class="cart-item-total">Rs. {{ item.item_total }}</div>
+              <button class="cart-remove-btn" onclick="removeCartItem('{{ item.cart_key }}')">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="cart-summary-card">
+          <h5 class="cart-summary-title">Order Summary</h5>
+          
+          <div class="cart-summary-row">
+            <span class="label">Subtotal</span>
+            <span class="value">Rs. {{ subtotal }}</span>
+          </div>
+          
+          {% if discount > 0 %}
+          <div class="cart-summary-row discount">
+            <span class="label">Discount</span>
+            <span class="value">- Rs. {{ discount }}</span>
+          </div>
+          {% endif %}
+          
+          <hr class="cart-summary-divider">
+          
+          <div class="cart-summary-total">
+            <span class="label">Total</span>
+            <span class="value">Rs. {{ total }}</span>
+          </div>
+
+          <!-- Coupon -->
+          <div style="margin-bottom: 28px;">
+            <label class="cart-coupon-label">Have a coupon code?</label>
+            <div class="cart-coupon-wrapper">
+              <input type="text" id="coupon-input" class="cart-coupon-input" placeholder="Enter code" value="{{ coupon_code }}">
+              <button class="cart-coupon-btn" type="button" onclick="applyCoupon()">Apply</button>
+            </div>
+            <small id="coupon-message" class="cart-coupon-message"></small>
+          </div>
+
+
+          {% if frontend_customer %}
+            <a href="{% url 'frontend:checkout' %}" class="cart-checkout-btn">
+                Proceed to Checkout <i class="bi bi-arrow-right"></i>
+            </a>
+           {% else %}
+            <button type="button" class="cart-checkout-btn" data-bs-toggle="modal" data-bs-target="#accountModal">
+                Proceed to Checkout <i class="bi bi-arrow-right"></i>
+            </button>
+          {% endif %}
+
+
+          <a href="{% url 'frontend:shop' %}" class="cart-continue-btn">
+            <i class="bi bi-arrow-left"></i> Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="cart-empty-state">
+      <div class="cart-empty-icon">
+        <i class="bi bi-cart-x"></i>
+      </div>
+      <h3 class="cart-empty-title">Your cart is empty</h3>
+      <p class="cart-empty-text">Looks like you haven't added anything to your cart yet. Explore our collection and find something you love.</p>
+      <a href="{% url 'frontend:shop' %}" class="cart-empty-btn">
+        <i class="bi bi-bag"></i> Start Shopping
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `custom-toast ${type}`;
+    toast.innerHTML = `<i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}"></i><span>${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+function updateCartItem(cartKey, newQty) {
+    if (newQty < 1) return;
+    fetch("{% url 'frontend:update_cart' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/x-www-form-urlencoded" },
+        body: `cart_key=${cartKey}&qty=${newQty}`
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            showToast('Cart updated successfully!');
+            const cartCountEl = document.getElementById('header-cart-count');
+            if(cartCountEl) cartCountEl.textContent = data.cart_count;
+            setTimeout(() => location.reload(), 500); 
+        }
+    });
+}
+
+function removeCartItem(cartKey) {
+    if(!confirm('Are you sure you want to remove this item?')) return;
+    fetch("{% url 'frontend:remove_from_cart' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/x-www-form-urlencoded" },
+        body: `cart_key=${cartKey}`
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            showToast('Item removed from cart');
+            const cartCountEl = document.getElementById('header-cart-count');
+            if(cartCountEl) cartCountEl.textContent = data.cart_count;
+            setTimeout(() => location.reload(), 500);
+        }
+    });
+}
+
+function applyCoupon() {
+    const code = document.getElementById('coupon-input').value.trim();
+    const msgEl = document.getElementById('coupon-message');
+    if (!code) { 
+        msgEl.textContent = 'Please enter a coupon code.'; 
+        msgEl.className = 'cart-coupon-message text-danger'; 
+        return; 
+    }
+
+    fetch("{% url 'frontend:apply_coupon' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/x-www-form-urlencoded" },
+        body: `code=${code}`
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            msgEl.textContent = data.message;
+            msgEl.className = 'cart-coupon-message text-success';
+            showToast('Coupon applied successfully!');
+            setTimeout(() => location.reload(), 1000); 
+        } else {
+            msgEl.textContent = data.message;
+            msgEl.className = 'cart-coupon-message text-danger';
+            showToast(data.message, 'error');
+        }
+    });
+}
+</script>
+{% endblock %}
