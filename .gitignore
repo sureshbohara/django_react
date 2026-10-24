@@ -1,26 +1,32 @@
-# Environment
-venv/
-env/
+# Node / React
+node_modules/
 .env
 .env.local
+.env.production
+dist/
+build/
+.vite/
 
-# Database
-db.sqlite3
-db.sqlite3-journal
-
-# Python
+# Django / Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-
-media/
+.Python
+venv/
+env/
+ENV/
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+/static/
 
 # IDE
 .vscode/
 .idea/
 *.swp
+*.swo
 
 # OS
 .DS_Store
